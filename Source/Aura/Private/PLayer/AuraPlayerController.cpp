@@ -23,8 +23,17 @@ void AAuraPlayerController::CursorTrace()
 	FHitResult CursorHit;
 	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
 	if (!CursorHit.bBlockingHit) return;
+	
 	LastActor = ThisActor;
-	ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor());
+	ThisActor = CursorHit.GetActor();
+	
+	if (LastActor != ThisActor)
+	{
+		if (LastActor) LastActor->UnHighlightActor();
+		if (ThisActor) ThisActor->HighlightActor();
+	}
+
+	//ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor()); //Swapped this line with line above because Stephen of Future said to do so.
 	/**
 	 * Line trace from cursor. There are several scenarios:
 	 *  A. LastActor is null && ThisActor is null
@@ -38,6 +47,9 @@ void AAuraPlayerController::CursorTrace()
 	 *	E. Both actors are valid, and are the same actor
 	 *		- Do nothing
 	 */
+
+
+	/*/
 	if (LastActor == nullptr)
 	{
 		if (ThisActor != nullptr)
@@ -71,6 +83,8 @@ void AAuraPlayerController::CursorTrace()
 			}
 		}
 	}
+	/*/
+
 }
 void AAuraPlayerController::BeginPlay()
 {
@@ -78,9 +92,11 @@ void AAuraPlayerController::BeginPlay()
 	check(AuraContext);
 
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	check(Subsystem);
-	Subsystem->AddMappingContext(AuraContext, 0);
-
+	if (Subsystem)
+	{
+		Subsystem->AddMappingContext(AuraContext, 0);
+	}
+	
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
 

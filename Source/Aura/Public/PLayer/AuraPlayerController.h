@@ -37,6 +37,9 @@ private:
 
 	void CursorTrace();
 
-	IEnemyInterface* LastActor;
-	IEnemyInterface* ThisActor;
+	TScriptInterface<IEnemyInterface> LastActor;
+	TScriptInterface<IEnemyInterface> ThisActor;
+
+	//IEnemyInterface* LastActor;  //Later video correction removed these lines and replaced with TScriptInterface lines above.
+	//IEnemyInterface* ThisActor;
 };
