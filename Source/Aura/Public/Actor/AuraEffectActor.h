@@ -1,10 +1,13 @@
 // Copyright Vince Bracken
 
 #pragma once
+
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameplayEffectTypes.h"
 #include "AuraEffectActor.generated.h"
 
+class UAbilitySystemComponent;
 class UGameplayEffect;
 
 UENUM(BlueprintType)
@@ -29,7 +32,7 @@ class AURA_API AAuraEffectActor : public AActor
 
 public:
 	AAuraEffectActor();
-	
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -42,7 +45,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void OnEndOverlap(AActor* TargetActor);
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
 	bool bDestroyOnEffectRemoval = false;
 
@@ -51,7 +53,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
 	EEffectApplicationPolicy InstantEffectApplicationPolicy = EEffectApplicationPolicy::DoNotApply;
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
 	TSubclassOf<UGameplayEffect> DurationGameplayEffectClass;
@@ -67,5 +68,5 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
 	EEffectRemovalPolicy InfiniteEffectRemovalPolicy = EEffectRemovalPolicy::RemoveOnEndOverlap;
-
+	TMap<FActiveGameplayEffectHandle, UAbilitySystemComponent*> ActiveEffectHandles;
 };
