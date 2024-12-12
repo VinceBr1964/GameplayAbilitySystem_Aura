@@ -8,7 +8,7 @@
 
 class AAuraProjectile;
 /**
- * 
+ *
  */
 UCLASS()
 class AURA_API UAuraProjectileSpell : public UAuraGameplayAbility
