@@ -1,6 +1,7 @@
-// Copyright Vince Bracken
+// Copyright Druid Mechanics
 
 #pragma once
+
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GameplayEffectTypes.h"
@@ -17,7 +18,7 @@ class AURA_API AAuraProjectile : public AActor
 
 public:
 	AAuraProjectile();
-	
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 
