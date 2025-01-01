@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "UI/WidgetController/AuraWidgetController.h"
 #include "AbilitySystem/data/AttributeInfo.h"
+#include "Player/AuraPlayerState.h"
 #include "AttributeMenuWidgetController.generated.h"
 
 class UAttributeInfo;
@@ -22,8 +23,13 @@ class AURA_API UAttributeMenuWidgetController : public UAuraWidgetController
 public:
 	virtual void BindCallbacksToDependencies() override;
 	virtual void BroadcastInitialValues() override;
+	
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FAttributeInfoSignature AttributeInfoDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
+	FOnPlayerStatChangedSignature  AttributePointsChangedDelegate;
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly)
