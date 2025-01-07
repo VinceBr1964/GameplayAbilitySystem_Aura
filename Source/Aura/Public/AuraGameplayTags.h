@@ -35,6 +35,8 @@ public:
 
 	FGameplayTag Attributes_Meta_IncomingXP;
 
+	FGameplayTag Abilities_None;
+
 	FGameplayTag Abilities_Attack;
 	FGameplayTag Abilities_Summon;
 
