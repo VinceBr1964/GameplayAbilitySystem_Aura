@@ -16,6 +16,8 @@
 #include "NavigationSystem.h"
 #include "Gameframework/Character.h"
 #include "UI/Widget/DamageTextComponent.h"
+#include "NiagaraFunctionLibrary.h"
+
 
 AAuraPlayerController::AAuraPlayerController()
 {
@@ -114,8 +116,9 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 					CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
 					bAutoRunning = true;
 				}
-
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ClickNiagaraSystem, CachedDestination);
 			}
+
 
 		}
 		FollowTime = 0.f;
