@@ -22,6 +22,7 @@ public:
 	void StoreOwnerVariables();
 
 
+
 protected:
 
 	UPROPERTY(BlueprintreadWrite, Category = "Beam")
@@ -29,10 +30,11 @@ protected:
 
 	UPROPERTY(BlueprintreadWrite, Category = "Beam")
 	TObjectPtr<AActor> MouseHitActor;
-	
+
 	UPROPERTY(BlueprintreadWrite, Category = "Beam")
 	TObjectPtr<APlayerController> OwnerPlayerController;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Beam")
 	TObjectPtr<ACharacter> OwnerCharacter;
+
 };
