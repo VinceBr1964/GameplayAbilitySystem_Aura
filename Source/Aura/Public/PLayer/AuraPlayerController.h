@@ -17,6 +17,7 @@ class IEnemyInterface;
 class UAuraInputConfig;
 class UAuraAbilitySystemComponent;
 class USplineComponent;
+class AMagicCircle;
 
 /**
  *
@@ -32,6 +33,11 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ShowDamageNumber(float DamamgeAmount, ACharacter* TargetCharacter, bool bBlockedHit, bool bCriticalHit);
 
+	UFUNCTION(BlueprintCallable)
+	void ShowMagicCircle();
+
+	UFUNCTION(BlueprintCallable)
+	void HideMagicCircle();
 
 protected:
 	virtual void BeginPlay() override;
@@ -63,8 +69,7 @@ private:
 
 	TScriptInterface<IEnemyInterface> LastActor;
 	TScriptInterface<IEnemyInterface> ThisActor;
-	//IEnemyInterface* LastActor;  //Later video correction removed these lines and replaced with TScriptInterface lines above.
-	//IEnemyInterface* ThisActor;
+
 
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
@@ -99,7 +104,16 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 
-	//--------------------------------------------------------
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AMagicCircle> MagicCircleClass;
+
+	UPROPERTY()
+	TObjectPtr<AMagicCircle> MagicCircle;
+
+	void UpdateMagicCircleLocation();
+
+
+//--------------------------------------------------------
 // Code added by ChatGPT to add Camera Rotation
 //--------------------------------------------------------
 /** Middle mouse pressed/released functions */
