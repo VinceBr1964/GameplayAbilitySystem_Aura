@@ -31,10 +31,17 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void ShowDamageNumber(float DamamgeAmount, ACharacter* TargetCharacter, bool bBlockedHit, bool bCriticalHit);
+
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+
+
+
 private:
+
+
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> AuraContext;
 
@@ -91,4 +98,32 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
+
+	//--------------------------------------------------------
+// Code added by ChatGPT to add Camera Rotation
+//--------------------------------------------------------
+/** Middle mouse pressed/released functions */
+	void OnMiddleMousePressed();
+	void OnMiddleMouseReleased();
+
+	/** Axis functions for camera rotation (mouse X) and zoom (mouse wheel). */
+	void RotateCamera(const FInputActionValue& Value);
+	void ZoomCamera(const FInputActionValue& Value);
+
+	/** Whether we are currently holding MMB to rotate the camera */
+	bool bRotateCamera = false;
+
+	//--------------------------------------------------------
+	// Add references to the new Input Actions (set them in BP)
+	//--------------------------------------------------------
+	UPROPERTY(EditAnywhere, Category = "Input|Camera")
+	TObjectPtr<UInputAction> CameraRotateAction = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input|Camera")
+	TObjectPtr<UInputAction> CameraZoomAction = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input|Camera")
+	TObjectPtr<UInputAction> CameraRotateToggleAction = nullptr;
+	/// End of GPT code in public section
+
 };

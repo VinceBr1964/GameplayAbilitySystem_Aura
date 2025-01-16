@@ -17,6 +17,10 @@
 #include "Gameframework/Character.h"
 #include "UI/Widget/DamageTextComponent.h"
 #include "NiagaraFunctionLibrary.h"
+// Added by ChatGPT
+#include "Character/AuraCharacter.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 
 AAuraPlayerController::AAuraPlayerController()
@@ -218,7 +222,115 @@ void AAuraPlayerController::SetupInputComponent()
 	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased);
 
 	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
+	//Code added by GPT
+	// Binds Input Tags for abilities (LMB, etc.)
+	AuraInputComponent->BindAbilityActions(
+		InputConfig,
+		this,
+		&ThisClass::AbilityInputTagPressed,
+		&ThisClass::AbilityInputTagReleased,
+		&ThisClass::AbilityInputTagHeld
+	);
+	// ------------------------------------------------------------------
+	// *** CAMERA CONTROL ADDITIONS ***
+	// ------------------------------------------------------------------
+	// 1) Bind the "toggle" (MMB pressed/released):
+	if (CameraRotateToggleAction)
+	{
+		AuraInputComponent->BindAction(
+			CameraRotateToggleAction,
+			ETriggerEvent::Started,
+			this,
+			&AAuraPlayerController::OnMiddleMousePressed
+		);
+		AuraInputComponent->BindAction(
+			CameraRotateToggleAction,
+			ETriggerEvent::Completed,
+			this,
+			&AAuraPlayerController::OnMiddleMouseReleased
+		);
+	}
+
+	// 2) Bind camera rotation axis (driven by Mouse X):
+	if (CameraRotateAction)
+	{
+		AuraInputComponent->BindAction(
+			CameraRotateAction,
+			ETriggerEvent::Triggered,
+			this,
+			&AAuraPlayerController::RotateCamera
+		);
+	}
+
+	// 3) Bind camera zoom axis (driven by Mouse Wheel):
+	if (CameraZoomAction)
+	{
+		AuraInputComponent->BindAction(
+			CameraZoomAction,
+			ETriggerEvent::Triggered,
+			this,
+			&AAuraPlayerController::ZoomCamera
+		);
+	}
+
 }
+
+//Code Added By GPT
+void AAuraPlayerController::OnMiddleMousePressed()
+{
+	bRotateCamera = true;
+	// Optionally hide the mouse cursor while rotating:
+	bShowMouseCursor = false;
+}
+
+void AAuraPlayerController::OnMiddleMouseReleased()
+{
+	bRotateCamera = false;
+	// Show the mouse cursor again:
+	bShowMouseCursor = true;
+}
+
+void AAuraPlayerController::RotateCamera(const FInputActionValue& Value)
+{
+	// If the user isn't holding MMB or axis is near zero, skip
+
+	if (!bRotateCamera) return;
+
+	const float AxisValue = Value.Get<float>();
+	UE_LOG(LogTemp, Warning, TEXT("RotateCamera() called with AxisValue = %f"), AxisValue);
+	if (FMath::IsNearlyZero(AxisValue, KINDA_SMALL_NUMBER)) return;
+
+	// Grab the possessed AuraCharacter and rotate its CameraBoom
+	if (AAuraCharacter* MyCharacter = Cast<AAuraCharacter>(GetPawn()))
+	{
+		if (MyCharacter->CameraBoom)
+		{
+			FRotator NewRotation = MyCharacter->CameraBoom->GetComponentRotation();
+			// Tweak the multiplier for desired turn speed
+			NewRotation.Yaw += AxisValue * 2.0f;
+			MyCharacter->CameraBoom->SetWorldRotation(NewRotation);
+		}
+	}
+}
+
+void AAuraPlayerController::ZoomCamera(const FInputActionValue& Value)
+{
+	const float AxisValue = Value.Get<float>();
+	if (FMath::IsNearlyZero(AxisValue, KINDA_SMALL_NUMBER)) return;
+
+	// Grab the possessed AuraCharacter and zoom via CameraBoom->TargetArmLength
+	if (AAuraCharacter* MyCharacter = Cast<AAuraCharacter>(GetPawn()))
+	{
+		if (MyCharacter->CameraBoom)
+		{
+			float DesiredArmLength = MyCharacter->CameraBoom->TargetArmLength - (AxisValue * 100.f);
+			// Clamp so we don’t zoom too close/far
+			DesiredArmLength = FMath::Clamp(DesiredArmLength, 300.f, 2000.f);
+			MyCharacter->CameraBoom->TargetArmLength = DesiredArmLength;
+		}
+	}
+}
+//Ends GPT code adds
 
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 {
