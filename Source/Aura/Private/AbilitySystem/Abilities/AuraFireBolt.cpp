@@ -74,7 +74,7 @@ FString UAuraFireBolt::GetDescription(int32 Level)
 			ManaCost,
 			Cooldown,
 			ScaledDamage,
-			FMath::Min(Level, NumProjectiles),
+			FMath::Min(Level, NumProjectiles - 1),
 			ScaledDamage);
 	}
 }
