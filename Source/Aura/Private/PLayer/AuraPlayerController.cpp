@@ -330,26 +330,41 @@ void AAuraPlayerController::OnMiddleMouseReleased()
 
 void AAuraPlayerController::RotateCamera(const FInputActionValue& Value)
 {
-	// If the user isn't holding MMB or axis is near zero, skip
-
 	if (!bRotateCamera) return;
 
 	const float AxisValue = Value.Get<float>();
-	UE_LOG(LogTemp, Warning, TEXT("RotateCamera() called with AxisValue = %f"), AxisValue);
 	if (FMath::IsNearlyZero(AxisValue, KINDA_SMALL_NUMBER)) return;
 
-	// Grab the possessed AuraCharacter and rotate its CameraBoom
 	if (AAuraCharacter* MyCharacter = Cast<AAuraCharacter>(GetPawn()))
 	{
 		if (MyCharacter->CameraBoom)
 		{
-			FRotator NewRotation = MyCharacter->CameraBoom->GetComponentRotation();
-			// Tweak the multiplier for desired turn speed
-			NewRotation.Yaw += AxisValue * 2.0f;
-			MyCharacter->CameraBoom->SetWorldRotation(NewRotation);
+			// Current rotation
+			FRotator CurrentRotation = MyCharacter->CameraBoom->GetComponentRotation();
+
+			// Desired rotation
+			FRotator TargetRotation = CurrentRotation;
+			TargetRotation.Yaw += AxisValue * 50.0f; // Example: tweak this speed as desired
+
+			// Interp speed
+			float InterpSpeed = 8.0f; // Tune this for the 'feel' of smoothing
+
+			// Delta time
+			float DeltaTime = GetWorld()->GetDeltaSeconds();
+
+			// Interpolate
+			FRotator SmoothRotation = FMath::RInterpTo(
+				CurrentRotation,
+				TargetRotation,
+				DeltaTime,
+				InterpSpeed
+			);
+
+			MyCharacter->CameraBoom->SetWorldRotation(SmoothRotation);
 		}
 	}
 }
+
 
 void AAuraPlayerController::ZoomCamera(const FInputActionValue& Value)
 {
