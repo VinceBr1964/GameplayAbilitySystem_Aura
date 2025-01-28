@@ -32,7 +32,7 @@ public:
 	FString LoadSlotName;
 
 	UPROPERTY()
-	FString SlotIndex;
+	int32 SlotIndex;
 
 	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SlotStatus;
