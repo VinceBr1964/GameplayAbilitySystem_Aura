@@ -14,6 +14,10 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "UI/HUD/AuraHUD.h"
 #include "AuraGameplayTags.h"
+#include "Game/AuraGameInstance.h"
+#include "Game/AuraGameModeBase.h"
+#include "Game/LoadScreenSaveGame.h"
+#include "Kismet/GameplayStatics.h"
 
 
 
@@ -171,6 +175,18 @@ void AAuraCharacter::HideMagicCircle_Implementation()
 	{
 		AuraPlayerController->HideMagicCircle();
 		AuraPlayerController->bShowMouseCursor = true;
+	}
+}
+
+void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
+{
+	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (AuraGameMode)
+	{
+		ULoadScreenSaveGame* SaveData = AuraGameMode->RetrieveInGameSaveData();
+		if (SaveData == nullptr) return;
+		SaveData->PlayerStartTag = CheckpointTag;
+		AuraGameMode->SaveInGameProgressData(SaveData);
 	}
 }
 
