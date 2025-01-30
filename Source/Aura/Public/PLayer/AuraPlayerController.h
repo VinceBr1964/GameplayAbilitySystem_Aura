@@ -8,12 +8,12 @@
 #include "GameplayTagContainer.h"
 #include "AuraPlayerController.generated.h"
 
+class IHighlightInterface; 
 class UNiagaraSystem;
 class UDamageTextComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-class IEnemyInterface;
 class UAuraInputConfig;
 class UAuraAbilitySystemComponent;
 class USplineComponent;
@@ -70,8 +70,8 @@ private:
 	FHitResult CursorHit;
 
 
-	TScriptInterface<IEnemyInterface> LastActor;
-	TScriptInterface<IEnemyInterface> ThisActor;
+	IHighlightInterface* LastActor;
+	IHighlightInterface* ThisActor;
 
 
 	void AbilityInputTagPressed(FGameplayTag InputTag);

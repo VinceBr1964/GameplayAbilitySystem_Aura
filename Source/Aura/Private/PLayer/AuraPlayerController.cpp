@@ -16,6 +16,7 @@
 #include "NavigationSystem.h"
 #include "Gameframework/Character.h"
 #include "UI/Widget/DamageTextComponent.h"
+#include "Interaction/HighlightInterface.h"
 #include "NiagaraFunctionLibrary.h"
 // Added by ChatGPT
 #include "Character/AuraCharacter.h"
@@ -118,17 +119,15 @@ void AAuraPlayerController::CursorTrace()
 	if (!CursorHit.bBlockingHit) return;
 	
 	LastActor = ThisActor;
-	ThisActor = CursorHit.GetActor();
+	ThisActor = Cast<IHighlightInterface>(CursorHit.GetActor());
 	
 	if (LastActor != ThisActor)
 	{
 		if (LastActor) LastActor->UnHighlightActor();
 		if (ThisActor) ThisActor->HighlightActor();
 	}
-
-
-
 }
+
 void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
