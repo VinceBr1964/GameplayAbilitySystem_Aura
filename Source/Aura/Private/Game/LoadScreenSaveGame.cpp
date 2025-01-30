@@ -3,7 +3,7 @@
 
 #include "Game/LoadScreenSaveGame.h"
 
-FSavedMap ULoadScreenSaveGame::GetSaveMapWithMapName(const FString& InMapName)
+FSavedMap ULoadScreenSaveGame::GetSavedMapWithMapName(const FString& InMapName)
 {
 	for (const FSavedMap& Map : SavedMaps)
 	{

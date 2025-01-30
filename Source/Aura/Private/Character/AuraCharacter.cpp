@@ -15,7 +15,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "UI/HUD/AuraHUD.h"
 #include "AuraGameplayTags.h"
-#include "Game/AuraGameInstance.h"
 #include "Game/AuraGameModeBase.h"
 #include "Game/LoadScreenSaveGame.h"
 #include "Kismet/GameplayStatics.h"
@@ -60,6 +59,11 @@ void AAuraCharacter::PossessedBy(AController* NewController)
 	// Init Ability Actor info for the server
 	InitAbilityActorInfo();
 	LoadProgress();
+
+	if (AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	{
+		AuraGameMode->LoadWorldState(GetWorld());
+	}
 }
 
 void AAuraCharacter::LoadProgress()
