@@ -26,8 +26,11 @@ public:
 	/* end Save Interface */
 
 
-	UPROPERTY(BlueprintReadOnly, SaveGame)
+	UPROPERTY(BlueprintReadWrite, SaveGame)
 	bool bReached = false;
+
+	UPROPERTY(EditAnywhere)
+	bool bBindOverlapCallback = true;
 
 protected:
 
@@ -52,7 +55,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void CheckpointReached(UMaterialInstanceDynamic* DynamicMaterialInstance);
 
-
+	UFUNCTION(BlueprintCallable)
 	void HandleGlowEffects();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
