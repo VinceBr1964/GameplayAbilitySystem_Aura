@@ -48,7 +48,11 @@ void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 			bReached = true;
 			if (AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
 			{
-				AuraGM->SaveWorldState(GetWorld());
+				const UWorld* World = GetWorld();
+				FString MapName = World->GetMapName();
+				MapName.RemoveFromStart(World->StreamingLevelsPrefix);
+
+				AuraGM->SaveWorldState(GetWorld(), MapName);
 			}
 
 
