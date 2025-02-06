@@ -23,7 +23,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Summoning")
 	TSubclassOf<APawn> GetRandomMinionClass();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Summoning")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Summoning")
 	int32 NumMinions = 5;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Summoning")

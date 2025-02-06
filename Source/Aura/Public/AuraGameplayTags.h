@@ -36,6 +36,7 @@ public:
 	FGameplayTag Abilities_Summon;
 
 	FGameplayTag Abilities_HitReact;
+	FGameplayTag Abilities_Explode;
 
 	FGameplayTag Abilities_Status_Locked;
 	FGameplayTag Abilities_Status_Eligible;

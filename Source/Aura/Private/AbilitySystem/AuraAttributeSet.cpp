@@ -13,6 +13,9 @@
 #include "Interaction/PlayerInterface.h"
 #include <PLayer/AuraPlayerController.h>
 #include <AbilitySystem/AuraAbilitySystemLibrary.h>
+#include <Character/AuraFriendlyCharacter.h>
+#include <AbilitySystem/Abilities/AuraSummonFireMinions.h>
+#include <Kismet/GameplayStatics.h>
 
 
 
@@ -327,6 +330,7 @@ void UAuraAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute,
 
 void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage, bool bBlockedHit, bool bCriticalHit) const
 {
+	if (!Props.SourceCharacter) return;
 	if (Props.SourceCharacter != Props.TargetCharacter)
 	{
 		if (AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.SourceCharacter->Controller))
@@ -349,11 +353,39 @@ void UAuraAttributeSet::SendXPEvent(const FEffectProperties& Props)
 		const ECharacterClass TargetClass = ICombatInterface::Execute_GetCharacterClass(Props.TargetCharacter);
 		const int32 XPReward = UAuraAbilitySystemLibrary::GetXPRewardForClassAndLevel(Props.TargetCharacter, TargetClass, TargetLevel);
 
+		//new code trying out
+		ACharacter* Character = UGameplayStatics::GetPlayerCharacter(this, 0);
+		AActor* Actor = Character; // Implicitly upcasts ACharacter* to AActor*
+
+		AActor* XPRecipient = Props.SourceCharacter; // Default to SourceCharacter (the killer)
+		AActor* Summoner = nullptr;
+
+		if (AAuraFriendlyCharacter* SummonedMinion = Cast<AAuraFriendlyCharacter>(Props.SourceCharacter))
+		{
+			Summoner = SummonedMinion->GetSummoner(); // Get the summoner reference
+
+			if (Summoner)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Summoner found: %s"), *Summoner->GetName());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Summoner is NULL! The minion may not have had SetSummoner() called."));
+			}
+		}
+
+		// If the minion has a valid summoner, assign XP to the summoner
+		if (Summoner)
+		{
+			XPRecipient = Summoner;
+		}
+
+
 		const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
 		FGameplayEventData PayLoad;
 		PayLoad.EventTag = GameplayTags.Attributes_Meta_IncomingXP;
 		PayLoad.EventMagnitude = XPReward;
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Props.SourceCharacter, GameplayTags.Attributes_Meta_IncomingXP, PayLoad);
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(XPRecipient, GameplayTags.Attributes_Meta_IncomingXP, PayLoad);
 	}
 }
 

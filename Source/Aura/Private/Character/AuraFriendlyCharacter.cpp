@@ -162,5 +162,22 @@ void AAuraFriendlyCharacter::StunTagChanged(const FGameplayTag CallbackTag, int3
 	}
 }
 
+void AAuraFriendlyCharacter::SetSummoner(AActor* InSummoner)
+{
+	Summoner = InSummoner;
 
+	if (Summoner)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SetSummoner called on %s. Summoner set to: %s"), *GetName(), *Summoner->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("SetSummoner called on %s, but Summoner is NULL!"), *GetName());
+	}
+}
+
+AActor* AAuraFriendlyCharacter::GetSummoner() const
+{
+	return Summoner;
+}
 

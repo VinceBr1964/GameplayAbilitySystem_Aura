@@ -52,6 +52,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<AActor> CombatTarget;
 
+	// Stores the actor that summoned this minion
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Summoning")
+	AActor* Summoner;
+
+	// Setter for Summoner (so we can assign the summoner when spawning)
+	UFUNCTION(BlueprintCallable, Category = "Summoning")
+	void SetSummoner(AActor* InSummoner);
+
+	// Getter for Summoner (so we can retrieve it in SendXPEvent)
+	UFUNCTION(BlueprintPure, Category = "Summoning")
+	AActor* GetSummoner() const;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -71,6 +83,8 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category = "FriendlyAI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;
+
+
 
 private:
 

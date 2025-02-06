@@ -11,23 +11,9 @@ class AURA_API UAuraSummonFireMinions : public UAuraSummonAbility
 {
 	GENERATED_BODY()
 
-
 public:
-	TArray<FVector> GetSpawnLocations();
+	virtual FString GetDescription(int32 Level) override;
+	virtual FString GetNextLevelDescription(int32 Level) override;
 
-	// Override to define specific behavior for fire minions
-	virtual void ExplodeMinion(AActor* Minion);
 
-	// New properties specific to fire minions
-	UPROPERTY(EditDefaultsOnly, Category = "Summoning | Fire Minions")
-	TSubclassOf<UGameplayEffect> FireEffect;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Summoning | Fire Minions")
-	TSubclassOf<UGameplayEffect> ExplosionDamageEffect;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Summoning | Fire Minions")
-	float ExplosionDelay = 3.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Summoning | Fire Minions")
-	float ExplosionRadius = 250.f;
 };

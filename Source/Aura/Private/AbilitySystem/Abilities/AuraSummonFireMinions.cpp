@@ -1,55 +1,99 @@
 // Copyright Vince Bracken
 
 #include "AbilitySystem/Abilities/AuraSummonFireMinions.h"
-#include "AbilitySystem/Abilities/AuraSummonAbility.h"
-#include "GameFramework/Character.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "TimerManager.h"
-#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystem/Abilities/AuraExplode.h"
 #include "AbilitySystemComponent.h"
-#include "AIController.h"
-#include <AbilitySystem/AuraAbilitySystemLibrary.h>
-#include <AbilitySystem/Abilities/AuraBeamSpell.h>
+#include "AbilitySystem/Abilities/AuraProjectileSpell.h"
+#include "AbilitySystem/Abilities/AuraDamageGameplayAbility.h"
 
 
 
-TArray<FVector> UAuraSummonFireMinions::GetSpawnLocations()
+
+FString UAuraSummonFireMinions::GetDescription(int32 Level)
 {
 
-	TArray<FVector> SpawnLocations = Super::GetSpawnLocations();
-	return SpawnLocations;
-}
+	const float ManaCost = FMath::Abs(GetManaCost(Level));
+	const float Cooldown = GetCooldown(Level);
 
+	if (Level > 5) Level = 5;
+	NumMinions = Level;
 
-void UAuraSummonFireMinions::ExplodeMinion(AActor* Minion)
-{
-	if (!Minion) return;
-
-	// Apply explosion damage
-	if (ExplosionDamageEffect)
+	if (Level == 1)
 	{
-		TArray<AActor*> AffectedActors;
-		UKismetSystemLibrary::SphereOverlapActors(
-			GetWorld(),
-			Minion->GetActorLocation(),
-			ExplosionRadius,
-			TArray<TEnumAsByte<EObjectTypeQuery>>(),
-			ACharacter::StaticClass(),
-			TArray<AActor*>(),
-			AffectedActors);
+		return FString::Printf(TEXT(
+			//Title
+			"<Title>Summons a Fire Minion:</>\n"
 
-		for (AActor* Target : AffectedActors)
-		{
-			UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
-			if (TargetASC)
-			{
-				FGameplayEffectSpecHandle EffectSpec = TargetASC->MakeOutgoingSpec(ExplosionDamageEffect, 1.0f, TargetASC->MakeEffectContext());
-				TargetASC->ApplyGameplayEffectSpecToSelf(*EffectSpec.Data.Get());
-			}
-		}
+			//Level
+			"<Small>Level: </><Level>%d</>\n"
+			//ManaCost
+			"<Small>Manna Cost: </><ManaCost>%.1f</>\n"
+			//Cooldown
+			"<Small>Cooldown Duration: </><Cooldown>%.1f</>\n"
+
+			//Description
+			"<Default>Spawns an enemy seeking Fire Demon, "
+			"that will explode on impact with radial damage.</>"
+
+		),
+			//Values
+			Level,
+			ManaCost,
+			Cooldown);
 	}
+	else
+	{
+		return FString::Printf(TEXT(
+			//Title
+			"<Title>Summons Fire Demons:</>\n"
 
-	// Destroy Minion
-	Minion->Destroy();
+			//Level
+			"<Small>Level: </><Level>%d</>\n"
+			//ManaCost
+			"<Small>Manna Cost: </><ManaCost>%.1f</>\n"
+			//Cooldown
+			"<Small>Cooldown Duration: </><Cooldown>%.1f</>\n"
+
+			//Number of Minions
+			"<Default>Spawns %d enemy seeking Fire Demons, "
+			"that will explode on impact with radial damage.</>"
+
+		),
+			//Values
+			Level,
+			ManaCost,
+			Cooldown,
+			NumMinions);
+	}
 }
 
+FString UAuraSummonFireMinions::GetNextLevelDescription(int32 Level)
+{
+	const float ManaCost = FMath::Abs(GetManaCost(Level));
+	const float Cooldown = GetCooldown(Level);
+
+	if (Level > 5) Level = 5;
+	NumMinions = Level;
+
+	return FString::Printf(TEXT(
+		//Title
+		"<Title>NEXT LEVEL:</>\n"
+
+		//Level
+		"<Small>Level: </><Level>%d</>\n"
+		//ManaCost
+		"<Small>Manna Cost: </><ManaCost>%.1f</>\n"
+		//Cooldown
+		"<Small>Cooldown Duration: </><Cooldown>%.1f</>\n"
+
+		//Number of Minions
+		"<Default>Spawns %d enemy seeking Fire Demons, "
+		"that will explode on impact with radial damage.</>"
+
+	),
+		//Values
+		Level,
+		ManaCost,
+		Cooldown,
+		NumMinions);
+}
