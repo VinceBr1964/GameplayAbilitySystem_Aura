@@ -3,6 +3,7 @@
 
 #include "Character/AuraFriendlyCharacter.h"
 #include <Character/AuraEnemy.h>
+#include "Kismet/GameplayStatics.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
@@ -44,6 +45,79 @@ AAuraFriendlyCharacter::AAuraFriendlyCharacter()
 
 	BaseWalkSpeed = 250.f;
 	AIControllerClass = AAuraFriendlyAIController::StaticClass();
+}
+
+void AAuraFriendlyCharacter::AssignUniqueTargets()
+{
+	// Find all available enemies
+	TArray<AActor*> AvailableEnemies;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Enemy"), AvailableEnemies);
+
+	// Find all Fire Minions
+	TArray<AActor*> FireMinions;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Friend"), FireMinions);
+
+	ACharacter* Character = UGameplayStatics::GetPlayerCharacter(this, 0);
+	AActor* AuraActor = Character;
+
+	AAIController* MinionAIController = Cast<AAIController>(FireMinions[0]->GetInstigatorController());
+	UBlackboardComponent* Blackboard = MinionAIController->FindComponentByClass<UBlackboardComponent>();
+
+	if (AvailableEnemies.Num() == 0)
+	{
+		// No enemies found, assign all minions to follow the Avatar
+		for (AActor* Minion : FireMinions)
+		{
+			MinionAIController = Cast<AAIController>(Minion->GetInstigatorController());
+			Blackboard = MinionAIController->FindComponentByClass<UBlackboardComponent>();
+
+			if (Blackboard)
+			{
+				Blackboard->SetValueAsObject("TargetToFollow", AuraActor); // Assign Avatar as default
+				Blackboard->SetValueAsFloat("DistanceToTarget", GetDistanceTo(AuraActor));
+				Blackboard->SetValueAsBool("HasTarget", false);
+			}
+		}
+		return;
+	}
+
+	//Sorts for closest distance against First Fire Minion
+	AActor* FirstMinion = FireMinions[0];
+	AvailableEnemies.Sort([&](const AActor& A, const AActor& B)
+		{
+			return FirstMinion->GetDistanceTo(&A) < FirstMinion->GetDistanceTo(&B);
+		});
+
+	AActor* ClosestEnemy = AvailableEnemies[0];
+
+	MinionAIController = Cast<AAIController>(FirstMinion->GetInstigatorController());
+	Blackboard = MinionAIController->GetBlackboardComponent();
+
+	float DistanceToEnemy = FirstMinion->GetDistanceTo(ClosestEnemy);
+	if (DistanceToEnemy < EnemySightRange)
+	{
+		Blackboard->SetValueAsObject("TargetToFollow", ClosestEnemy);
+		Blackboard->SetValueAsFloat("DistanceToTarget", DistanceToEnemy);
+		Blackboard->SetValueAsBool("HasTarget", true);
+	}
+	else
+	{
+		Blackboard->SetValueAsObject("TargetToFollow", AuraActor);
+		Blackboard->SetValueAsFloat("DistanceToTarget", GetDistanceTo(AuraActor));
+		Blackboard->SetValueAsBool("HasTarget", false);
+	}
+
+	
+	int32 EnemyIndex = 0;
+	for (int i = 1; i < FireMinions.Num(); i++)
+	{
+		MinionAIController = Cast<AAIController>(FireMinions[i]->GetInstigatorController());
+		Blackboard = MinionAIController->GetBlackboardComponent();
+
+		Blackboard->SetValueAsObject("TargetToFollow", AuraActor);
+		Blackboard->SetValueAsFloat("DistanceToTarget", GetDistanceTo(AuraActor));
+		Blackboard->SetValueAsBool("HasTarget", false);
+	}
 }
 
 void AAuraFriendlyCharacter::PossessedBy(AController* NewController)

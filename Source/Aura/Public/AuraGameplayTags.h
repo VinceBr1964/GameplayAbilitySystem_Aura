@@ -11,6 +11,9 @@ public:
 	static const FAuraGameplayTags& Get() { return GameplayTags;}
 	static void InitializeNativeGameplayTags();
 
+	FGameplayTag Character_Type_Enemy;
+	FGameplayTag Character_Type_Friend;
+
 	FGameplayTag Attributes_Primary_Strength;
 	FGameplayTag Attributes_Primary_Intelligence;
 	FGameplayTag Attributes_Primary_Resilience;

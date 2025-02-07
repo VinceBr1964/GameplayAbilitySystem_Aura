@@ -24,6 +24,7 @@ class AURA_API AAuraFriendlyCharacter : public AAuraCharacterBase, public IEnemy
 public:
 	AAuraFriendlyCharacter();
 
+	void AssignUniqueTargets();
 	virtual void PossessedBy(AController* NewController) override;
 
 	/** Combat Interface*/
@@ -74,6 +75,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
 	int32 Level = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
+	int32 EnemySightRange = 1000;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> HealthBar;

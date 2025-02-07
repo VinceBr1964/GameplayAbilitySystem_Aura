@@ -9,6 +9,11 @@ FAuraGameplayTags FAuraGameplayTags::GameplayTags;
 
 void FAuraGameplayTags::InitializeNativeGameplayTags()
 {
+	//Character Types
+	GameplayTags.Character_Type_Enemy = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.Type.Enemy"), FString("Identifies Character As Enemy"));
+	GameplayTags.Character_Type_Friend = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.Type.Friend"), FString("Identifies Character As Enemy"));
+
+
 	//Primary attributes
 	GameplayTags.Attributes_Primary_Strength = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Primary.Strength"), FString("Increases physical damage"));
 	GameplayTags.Attributes_Primary_Intelligence = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Primary.Intelligence"), FString("Increases magical damage"));

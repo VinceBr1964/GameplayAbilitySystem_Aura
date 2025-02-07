@@ -19,6 +19,13 @@ void UAuraExplode::Explode(AActor* MinionActor)
 	TArray<AActor*> IgnoredActors;
 	IgnoredActors.Add(MinionActor);
 
+	TArray<AActor*> FoundFriends;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Friend"), FoundFriends);
+
+	for (AActor* Friend : FoundFriends)
+	{
+		IgnoredActors.Add(Friend);
+	}
 
 	// Get the player character from Ability System Component
 	ACharacter* Character = UGameplayStatics::GetPlayerCharacter(this, 0);
