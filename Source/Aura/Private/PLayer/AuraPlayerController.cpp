@@ -3,6 +3,9 @@
 
 
 #include "Player/AuraPlayerController.h"
+#include "HexTileSystem/AHexTile.h" 
+#include "HexTileSystem/HexGridManager.h"
+#include "EngineUtils.h" 
 
 #include "EnhancedInputSubsystems.h"
 #include "Input/AuraInputComponent.h"
@@ -15,6 +18,7 @@
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
 #include "Gameframework/Character.h"
+#include "GameFramework/Pawn.h"
 #include "UI/Widget/DamageTextComponent.h"
 #include "Interaction/HighlightInterface.h"
 #include "NiagaraFunctionLibrary.h"
@@ -40,6 +44,21 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 	CursorTrace();
 	AutoRun();
 	UpdateMagicCircleLocation();
+
+	//New: Reveal hexes only when entering a new hex
+	AHexTile* CurrentHex = GetHexUnderPlayer();
+	AHexGridManager* GridManager = nullptr;
+	for (TActorIterator<AHexGridManager> It(GetWorld()); It; ++It)
+	{
+		GridManager = *It;
+		break;  // Stop after finding the first one
+	}
+	if (CurrentHex && CurrentHex != LastRevealedHex) // Only reveal if changed
+	{
+		GridManager->RevealHexAndNeighbors(CurrentHex);
+		LastRevealedHex = CurrentHex; // Store the last revealed hex
+	}
+
 }
 
 void AAuraPlayerController::UpdateMagicCircleLocation()
@@ -136,8 +155,10 @@ void AAuraPlayerController::CursorTrace()
 	const ECollisionChannel TraceChannel = IsValid(MagicCircle) ? ECC_ExcludePlayers : ECC_Visibility;
 	GetHitResultUnderCursor(TraceChannel, false, CursorHit);
 	if (!CursorHit.bBlockingHit) return;
+
 	
 	LastActor = ThisActor;
+
 	if (IsValid(CursorHit.GetActor()) && CursorHit.GetActor()->Implements<UHighlightInterface>())
 	{
 		ThisActor = CursorHit.GetActor();
@@ -153,6 +174,7 @@ void AAuraPlayerController::CursorTrace()
 		HighlightActor(ThisActor);
 	}
 }
+
 
 void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
@@ -270,10 +292,27 @@ void AAuraPlayerController::BeginPlay()
 	Super::BeginPlay();
 	check(AuraContext);
 
+
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	if (Subsystem)
 	{
 		Subsystem->AddMappingContext(AuraContext, 0);
+	}
+
+	// Get a reference to HexGridManager
+	for (TActorIterator<AHexGridManager> It(GetWorld()); It; ++It)
+	{
+		HexGridManager = *It;
+		break; // Stop at the first found instance
+	}
+
+	if (HexGridManager)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HexGridManager successfully assigned in AuraPlayerController"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("HexGridManager is NULL in AuraPlayerController!"));
 	}
 	
 	bShowMouseCursor = true;
@@ -346,6 +385,49 @@ void AAuraPlayerController::SetupInputComponent()
 		);
 	}
 
+	// ------------------------------------------------------------------
+	// *** MOVEMENT MODE SWITCH (M Key) ***
+	// ------------------------------------------------------------------
+	if (IA_M)
+	{
+		AuraInputComponent->BindAction(
+			IA_M,
+			ETriggerEvent::Started,
+			this,
+			&AAuraPlayerController::ToggleHexMovementMode
+		);
+	}
+}
+
+void AAuraPlayerController::ToggleHexMovementMode()
+{
+	UE_LOG(LogTemp, Warning, TEXT("M Key Pressed - Attempting to Switch Movement Mode"));
+
+	if (CurrentMovementMode == EPlayerMovementMode::FreeMovement)
+	{
+		CurrentMovementMode = EPlayerMovementMode::HexMovement;
+		UE_LOG(LogTemp, Warning, TEXT("Hex Movement Mode Activated"));
+
+		if (HexGridManager)
+		{
+			APawn* PlayerPawn = GetPawn();
+			if (PlayerPawn)
+			{
+				AHexTile* StartTile = HexGridManager->GetHexTileAtLocation(PlayerPawn->GetActorLocation());
+				HexGridManager->ShowMovementRange(StartTile, 2); // Example movement range
+			}
+		}
+	}
+	else
+	{
+		CurrentMovementMode = EPlayerMovementMode::FreeMovement;
+		UE_LOG(LogTemp, Warning, TEXT("Free Movement Mode Activated"));
+
+		if (HexGridManager)
+		{
+			HexGridManager->ClearMovementRange();
+		}
+	}
 }
 
 
@@ -440,6 +522,29 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
 	}
+}
+
+AHexTile* AAuraPlayerController::GetHexUnderPlayer()
+{
+	if (!GetPawn()) return nullptr;
+
+	FVector PlayerLocation = GetPawn()->GetActorLocation();
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(GetPawn()); // Ignore the player itself
+
+	if (GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		PlayerLocation + FVector(0, 0, 100),  // Start above the player
+		PlayerLocation - FVector(0, 0, 200), // Trace downward
+		ECC_Visibility,
+		QueryParams
+	))
+	{
+		return Cast<AHexTile>(HitResult.GetActor());
+	}
+
+	return nullptr;
 }
 
 

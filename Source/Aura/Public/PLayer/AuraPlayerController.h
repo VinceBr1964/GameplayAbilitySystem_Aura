@@ -5,6 +5,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "HexTileSystem/AHexTile.h"
+#include "HexTileSystem/HexGridManager.h"
 #include "GameplayTagContainer.h"
 #include "AuraPlayerController.generated.h"
 
@@ -18,6 +20,13 @@ class UAuraInputConfig;
 class UAuraAbilitySystemComponent;
 class USplineComponent;
 class AMagicCircle;
+
+UENUM(BlueprintType)
+enum class EPlayerMovementMode : uint8
+{
+	FreeMovement UMETA(DisplayName = "Free Movement"),
+	HexMovement UMETA(DisplayName = "Hex Movement")
+};
 
 enum class ETargetingStatus : uint8
 {
@@ -50,12 +59,21 @@ public:
 
 
 protected:
+
+
+
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* IA_M;
 
 private:
+
+	void ToggleHexMovementMode();
+	
+	AHexTile* LastRevealedHex = nullptr;
+
 
 
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -72,6 +90,12 @@ private:
 	bool bShiftKeyDown = false;
 
 	void Move(const FInputActionValue& InputActionValue);
+
+	AHexTile* GetHexUnderPlayer();
+
+	EPlayerMovementMode CurrentMovementMode = EPlayerMovementMode::FreeMovement;
+
+	class AHexGridManager* HexGridManager;
 
 	void CursorTrace();
 	TObjectPtr<AActor> LastActor;
