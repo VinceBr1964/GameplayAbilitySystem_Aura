@@ -73,6 +73,33 @@ struct FSavedAbility
 	int32 AbilityLevel = 1;
 };
 
+USTRUCT(BlueprintType)
+struct FPlayerAttributesSaveData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	float Health;
+
+	UPROPERTY(BlueprintReadWrite)
+	float Mana;
+
+	UPROPERTY(BlueprintReadWrite)
+	float Gold;
+
+	UPROPERTY(BlueprintReadWrite)
+	float Wood;
+
+	UPROPERTY(BlueprintReadWrite)
+	float Food;
+
+	UPROPERTY(BlueprintReadWrite)
+	float Ore;
+
+	UPROPERTY(BlueprintReadWrite)
+	float MagicGems;
+};
+
 inline bool operator==(const FSavedAbility& Left, const FSavedAbility& Right)
 {
 	return Left.AbilityTag.MatchesTagExact(Right.AbilityTag);
@@ -149,7 +176,8 @@ public:
 
 	bool HasMap(const FString& InMapName);
 
-
+	UPROPERTY(BlueprintReadWrite)
+	FPlayerAttributesSaveData PlayerAttributes;
 
 
 };

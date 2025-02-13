@@ -117,6 +117,13 @@ public:
 
 	FGameplayTag GameplayCue_FireBlast;
 
+	// Resource Tags
+	FGameplayTag Attributes_Resource_Gold;
+	FGameplayTag Attributes_Resource_Wood;
+	FGameplayTag Attributes_Resource_Food;
+	FGameplayTag Attributes_Resource_Ore;
+	FGameplayTag Attributes_Resource_MagicGems;
+
 
 private:
 	static FAuraGameplayTags GameplayTags;

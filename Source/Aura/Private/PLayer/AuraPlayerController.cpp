@@ -45,20 +45,23 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 	AutoRun();
 	UpdateMagicCircleLocation();
 
-	//New: Reveal hexes only when entering a new hex
-	AHexTile* CurrentHex = GetHexUnderPlayer();
-	AHexGridManager* GridManager = nullptr;
-	for (TActorIterator<AHexGridManager> It(GetWorld()); It; ++It)
+//	AHexGridManager* GridManager = nullptr;
+//	for (TActorIterator<AHexGridManager> It(GetWorld()); It; ++It)
+//	{
+//		GridManager = *It;
+//		break;  // Stop after finding the first one
+//	}
+	
+	if (HexGridManager)
 	{
-		GridManager = *It;
-		break;  // Stop after finding the first one
+		AHexTile* CurrentHex = GetHexUnderPlayer();
+		if (CurrentHex && CurrentHex != LastRevealedHex) // Only reveal if changed
+		{
+			//New: Reveal hexes only when entering a new hex
+			HexGridManager->RevealHexAndNeighbors(CurrentHex);
+			LastRevealedHex = CurrentHex; // Store the last revealed hex
+		}
 	}
-	if (CurrentHex && CurrentHex != LastRevealedHex) // Only reveal if changed
-	{
-		GridManager->RevealHexAndNeighbors(CurrentHex);
-		LastRevealedHex = CurrentHex; // Store the last revealed hex
-	}
-
 }
 
 void AAuraPlayerController::UpdateMagicCircleLocation()
@@ -312,7 +315,7 @@ void AAuraPlayerController::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("HexGridManager is NULL in AuraPlayerController!"));
+		UE_LOG(LogTemp, Log, TEXT("HexGridManager not present in this level (BeginPlay)."));
 	}
 	
 	bShowMouseCursor = true;

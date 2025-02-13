@@ -1,7 +1,6 @@
 // Copyright Vince Bracken
 
 #include "Actor/AuraEffectActor.h"
-
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -9,7 +8,6 @@
 AAuraEffectActor::AAuraEffectActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>("SceneRoot"));
 }
 

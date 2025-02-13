@@ -240,6 +240,37 @@ public:
 	UFUNCTION()
 	void OnRep_PhysicalResistance(const FGameplayAttributeData& OldPhysicalResistance) const;
 
+	// Attributes for Resources
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Resources", ReplicatedUsing = OnRep_Gold)
+	FGameplayAttributeData Gold;
+	UFUNCTION()
+	void OnRep_Gold(const FGameplayAttributeData& OldValue);
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Gold);
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Resources", ReplicatedUsing = OnRep_Wood)
+	FGameplayAttributeData Wood;
+	UFUNCTION()
+	void OnRep_Wood(const FGameplayAttributeData& OldValue);
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Wood);
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Resources", ReplicatedUsing = OnRep_Food)
+	FGameplayAttributeData Food;
+	UFUNCTION()
+	void OnRep_Food(const FGameplayAttributeData& OldValue);
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Food);
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Resources", ReplicatedUsing = OnRep_Ore)
+	FGameplayAttributeData Ore;
+	UFUNCTION()
+	void OnRep_Ore(const FGameplayAttributeData& OldValue);
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Ore);
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Resources", ReplicatedUsing = OnRep_MagicGems)
+	FGameplayAttributeData MagicGems;
+	UFUNCTION()
+	void OnRep_MagicGems(const FGameplayAttributeData& OldValue);
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MagicGems);
+
 private:
 	void HandleIncomingDamage(const FEffectProperties& Props);
 	void HandleIncomingXP(const FEffectProperties& Props);

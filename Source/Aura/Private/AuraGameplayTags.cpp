@@ -147,4 +147,11 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	//Gameplay Cues
 	GameplayTags.GameplayCue_FireBlast = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.FireBlast"), FString("FireBlast GameplayCue Tag"));
 
+	// Define Resource Tags
+	GameplayTags.Attributes_Resource_Gold = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resource.Gold"), FString("Gold currency used for trading and upgrades"));
+	GameplayTags.Attributes_Resource_Wood = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resource.Wood"), FString("Wood collected for construction and crafting"));
+	GameplayTags.Attributes_Resource_Food = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resource.Food"), FString("Food consumed to sustain the player's army or settlements"));
+	GameplayTags.Attributes_Resource_Ore = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resource.Ore"), FString("Ore used for blacksmithing and crafting weapons"));
+	GameplayTags.Attributes_Resource_MagicGems = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resource.MagicGems"), FString("Rare magical gems used to enhance spells or trade for rare items"));
+
 }

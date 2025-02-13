@@ -12,6 +12,7 @@
 #include "Game/LoadScreenSaveGame.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include <Interaction/SaveInterface.h>
+#include <AbilitySystem/AuraAttributeSet.h>
 
 void AAuraGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 {
@@ -124,6 +125,30 @@ void AAuraGameModeBase::SaveWorldState(UWorld* World, const FString& Destination
 				MapToReplace = SavedMap;
 			}
 		}
+
+		// Save player attributes
+		APlayerController* PC = World->GetFirstPlayerController();
+		if (PC)
+		{
+			APawn* PlayerPawn = PC->GetPawn();
+			if (PlayerPawn)
+			{
+				UAbilitySystemComponent* ASC = PlayerPawn->FindComponentByClass<UAbilitySystemComponent>();
+				if (ASC)
+				{
+					const UAuraAttributeSet* ConstAttributes = ASC->GetSet<UAuraAttributeSet>();
+					UAuraAttributeSet* Attributes = const_cast<UAuraAttributeSet*>(ConstAttributes);
+					if (Attributes)
+					{
+						SaveGame->PlayerAttributes.Gold = Attributes->GetGold();
+						SaveGame->PlayerAttributes.Wood = Attributes->GetWood();
+						SaveGame->PlayerAttributes.Food = Attributes->GetFood();
+						SaveGame->PlayerAttributes.Ore = Attributes->GetOre();
+						SaveGame->PlayerAttributes.MagicGems = Attributes->GetMagicGems();
+					}
+				}
+			}
+		}
 		UGameplayStatics::SaveGameToSlot(SaveGame, AuraGI->LoadSlotName, AuraGI->LoadSlotIndex);
 	}
 
@@ -163,6 +188,42 @@ void AAuraGameModeBase::LoadWorldState(UWorld* World) const
 					ISaveInterface::Execute_LoadActor(Actor);
 				}
 			}
+		}
+		APlayerController* PC = World->GetFirstPlayerController();
+		if (PC)
+		{
+			APawn* PlayerPawn = PC->GetPawn();
+			if (PlayerPawn)
+			{
+				UAbilitySystemComponent* ASC = PlayerPawn->FindComponentByClass<UAbilitySystemComponent>();
+				if (ASC)
+				{
+					const UAuraAttributeSet* ConstAttributes = ASC->GetSet<UAuraAttributeSet>();
+					UAuraAttributeSet* Attributes = const_cast<UAuraAttributeSet*>(ConstAttributes);
+					if (Attributes)
+					{
+						const FPlayerAttributesSaveData& SavedAttributes = SaveGame->PlayerAttributes;
+
+						Attributes->SetGold(SavedAttributes.Gold);
+						Attributes->SetWood(SavedAttributes.Wood);
+						Attributes->SetFood(SavedAttributes.Food);
+						Attributes->SetOre(SavedAttributes.Ore);
+						Attributes->SetMagicGems(SavedAttributes.MagicGems);
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("ASC was nullptr during LoadWorldState()"));
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("PlayerPawn was nullptr during LoadWorldState()"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerController was nullptr during LoadWorldState()"));
 		}
 	}
 }
