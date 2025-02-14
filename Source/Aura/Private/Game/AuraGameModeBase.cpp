@@ -13,6 +13,8 @@
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include <Interaction/SaveInterface.h>
 #include <AbilitySystem/AuraAttributeSet.h>
+#include <Character/AuraCharacter.h>
+#include <AbilitySystem/AuraAbilitySystemComponent.h>
 
 void AAuraGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 {
@@ -127,27 +129,26 @@ void AAuraGameModeBase::SaveWorldState(UWorld* World, const FString& Destination
 		}
 
 		// Save player attributes
-		APlayerController* PC = World->GetFirstPlayerController();
+		ACharacter* PC = UGameplayStatics::GetPlayerCharacter(this, 0);
+//		AAuraCharacter* PlayerCharacter = Cast<AAuraCharacter>(PC);
 		if (PC)
 		{
-			APawn* PlayerPawn = PC->GetPawn();
-			if (PlayerPawn)
+			AAuraCharacter* PlayerCharacter = Cast<AAuraCharacter>(PC);
+			UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(PlayerCharacter->GetAbilitySystemComponent());
+			if (AuraASC)
 			{
-				UAbilitySystemComponent* ASC = PlayerPawn->FindComponentByClass<UAbilitySystemComponent>();
-				if (ASC)
+				const UAuraAttributeSet* ConstAttributes = AuraASC->GetSet<UAuraAttributeSet>();
+				UAuraAttributeSet* Attributes = const_cast<UAuraAttributeSet*>(ConstAttributes);
+				if (Attributes)
 				{
-					const UAuraAttributeSet* ConstAttributes = ASC->GetSet<UAuraAttributeSet>();
-					UAuraAttributeSet* Attributes = const_cast<UAuraAttributeSet*>(ConstAttributes);
-					if (Attributes)
-					{
-						SaveGame->PlayerAttributes.Gold = Attributes->GetGold();
-						SaveGame->PlayerAttributes.Wood = Attributes->GetWood();
-						SaveGame->PlayerAttributes.Food = Attributes->GetFood();
-						SaveGame->PlayerAttributes.Ore = Attributes->GetOre();
-						SaveGame->PlayerAttributes.MagicGems = Attributes->GetMagicGems();
-					}
+					SaveGame->PlayerAttributes.Gold = Attributes->GetGold();
+					SaveGame->PlayerAttributes.Wood = Attributes->GetWood();
+					SaveGame->PlayerAttributes.Food = Attributes->GetFood();
+					SaveGame->PlayerAttributes.Ore = Attributes->GetOre();
+					SaveGame->PlayerAttributes.MagicGems = Attributes->GetMagicGems();
 				}
 			}
+
 		}
 		UGameplayStatics::SaveGameToSlot(SaveGame, AuraGI->LoadSlotName, AuraGI->LoadSlotIndex);
 	}
@@ -189,16 +190,17 @@ void AAuraGameModeBase::LoadWorldState(UWorld* World) const
 				}
 			}
 		}
-		APlayerController* PC = World->GetFirstPlayerController();
+		ACharacter* PC = UGameplayStatics::GetPlayerCharacter(this, 0);
+//		APlayerController* PC = World->GetFirstPlayerController();
 		if (PC)
 		{
-			APawn* PlayerPawn = PC->GetPawn();
-			if (PlayerPawn)
+			AAuraCharacter* PlayerCharacter = Cast<AAuraCharacter>(PC);
+			if (PlayerCharacter)
 			{
-				UAbilitySystemComponent* ASC = PlayerPawn->FindComponentByClass<UAbilitySystemComponent>();
-				if (ASC)
+				UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(PlayerCharacter->GetAbilitySystemComponent());
+				if (AuraASC)
 				{
-					const UAuraAttributeSet* ConstAttributes = ASC->GetSet<UAuraAttributeSet>();
+					const UAuraAttributeSet* ConstAttributes = AuraASC->GetSet<UAuraAttributeSet>();
 					UAuraAttributeSet* Attributes = const_cast<UAuraAttributeSet*>(ConstAttributes);
 					if (Attributes)
 					{
