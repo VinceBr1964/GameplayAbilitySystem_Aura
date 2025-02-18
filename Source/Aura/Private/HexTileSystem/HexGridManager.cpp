@@ -506,17 +506,6 @@ int AHexGridManager::GetHexDistance(AHexTile* A, AHexTile* B)
     return (abs(A->Q - B->Q) + abs(A->R - B->R) + abs((A->Q + A->R) - (B->Q + B->R))) / 2;
 }
 
-void AHexGridManager::HighlightOuterEdges(TSet<AHexTile*> ValidTiles, int Distance, AHexTile* ReferenceTile)
-{
-    for (AHexTile* Tile : ValidTiles)
-    {
-        if (GetHexDistance(ReferenceTile, Tile) == Distance) // Check if the tile is exactly at 'Distance' away
-        {
-            Tile->HighlightOuterEdges(ValidTiles, this);  // Call the function on the tile
-        }
-    }
-}
-
 TArray<AHexTile*> AHexGridManager::GetMovementBoundaryTiles(TArray<AHexTile*> ValidTiles)
 {
     TArray<AHexTile*> BoundaryTiles;

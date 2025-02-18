@@ -132,33 +132,6 @@ void AHexTile::ApplyFogOfWarState()
     }
 }
 
-void AHexTile::HighlightEdge(int EdgeIndex)
-{
-    if (!GetWorld()) return; // Ensure we have a valid world reference
-
-    // Define the six corners of a hex in local space (assuming a standard hex layout)
-    FVector HexCorners[6] = {
-       FVector(0, 0.5f, 0),    // Top
-       FVector(-0.433f, 0.25f, 0),  // Top Left
-       FVector(-0.433f, -0.25f, 0), // Bottom Left
-       FVector(0, -0.5f, 0),   // Bottom
-       FVector(0.433f, -0.25f, 0), // Bottom Right
-       FVector(0.433f, 0.25f, 0) // Top Right
-    };
-
-    // Ensure EdgeIndex is within range
-    if (EdgeIndex < 0 || EdgeIndex >= 6) return;
-
-    // Get world positions for the two corners that form this edge
-    FVector Start = GetActorLocation() + HexCorners[EdgeIndex] * 400; // 200 needs to be turned into a variable for HexSize
-    FVector End = GetActorLocation() + HexCorners[(EdgeIndex + 1) % 6] * 400; // 200 needs to be turned into a variable for HexSize
-
-    // Draw debug line for the edge
-    DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 5.0f, 0, 15.0f);
-
-    UE_LOG(LogTemp, Warning, TEXT("Debug Drawn Edge %d for Tile Q=%d, R=%d"), EdgeIndex, Q, R);
-}
-
 void AHexTile::SetHexType(EHexType NewType)
 {
     HexType = NewType;
@@ -263,28 +236,5 @@ void AHexTile::SetHighlighted(bool bHighlight)
     }
 }
 
-void AHexTile::HighlightOuterEdges(TSet<AHexTile*> ValidTiles, AHexGridManager* HexGridManager)
-{
-    // Define the six neighbor directions (Axial coordinate system)
-    int32 NeighborOffsets[6][2] = {
-        {+1, 0}, {+1, -1}, {0, -1},
-        {-1, 0}, {-1, +1}, {0, +1}
-    };
-
-    // Iterate through each neighbor direction
-    for (int i = 0; i < 6; i++)
-    {
-        int32 NeighborQ = Q + NeighborOffsets[i][0];
-        int32 NeighborR = R + NeighborOffsets[i][1];
-
-        // Check if the neighbor exists in the grid
-        AHexTile** NeighborTile = HexGridManager->HexTileMap.Find(FIntPoint(NeighborQ, NeighborR));
-
-        if (!NeighborTile || !ValidTiles.Contains(*NeighborTile)) // Only highlight edges facing invalid tiles
-        {
-            HighlightEdge(i);
-        }
-    }
-}
 
 

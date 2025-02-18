@@ -105,9 +105,6 @@ public:
 
     void RevealHex();
     void ApplyFogOfWarState();
-
-    void HighlightEdge(int EdgeIndex);
-
     void SetHexType(EHexType NewType);
 
     // Function to calculate world position
@@ -117,8 +114,6 @@ public:
     void UpdateVisibility(const FVector& PlayerLocation, float MaxRenderDistance);
 
     void SetHighlighted(bool bHighlight);
-
-    void HighlightOuterEdges(TSet<AHexTile*> ValidTiles, AHexGridManager* HexGridManager);
 
 };
 

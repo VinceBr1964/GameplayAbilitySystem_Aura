@@ -3,7 +3,7 @@
 #include "Character/AuraEnemy.h"
 
 
-void AAuraEnemySpawnPoint::SpawnEnemy()
+AAuraEnemy* AAuraEnemySpawnPoint::SpawnEnemy()
 {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -12,4 +12,6 @@ void AAuraEnemySpawnPoint::SpawnEnemy()
 	Enemy->SetCharacterClass(CharacterClass);
 	Enemy->FinishSpawning(GetActorTransform());
 	Enemy->SpawnDefaultController();
+	return Enemy;
+
 }
