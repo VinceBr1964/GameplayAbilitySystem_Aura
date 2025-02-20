@@ -42,7 +42,8 @@ AAuraEnemy::AAuraEnemy()
 	Weapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
 	Weapon->MarkRenderStateDirty();
 
-	BaseWalkSpeed = 250.f;
+	BaseWalkSpeed = 250.f; 
+
 }
 
 void AAuraEnemy::PossessedBy(AController* NewController)

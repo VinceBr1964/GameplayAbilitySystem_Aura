@@ -10,6 +10,16 @@
 class AHexGridManager;
 
 UENUM(BlueprintType)
+enum class EResourceType : uint8
+{
+    Food       UMETA(DisplayName = "Food"),
+    Gold       UMETA(DisplayName = "Gold"),
+    Ore        UMETA(DisplayName = "Ore"),
+    Wood       UMETA(DisplayName = "Wood"),
+    MagicGems  UMETA(DisplayName = "Magic Gems")
+};
+
+UENUM(BlueprintType)
 enum class EHexType : uint8
 {
     Grassland UMETA(DisplayName = "Grassland"),
@@ -70,9 +80,16 @@ public:
     UPROPERTY(BlueprintReadOnly, Category = "Hex Tile")
     int32 MovementCost = 3; // Default cost (can be overridden based on terrain)
 
-    // Resource type (Gold, Mana, etc.)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Tile")
-    FString ResourceType = "None";
+    // A map to track multiple resource types on one tile
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resources")
+    TMap<EResourceType, int32> ResourceMap;
+
+    // Helper functions for adding/removing resources
+    UFUNCTION(BlueprintCallable, Category = "Resources")
+    void AddResource(EResourceType ResourceType, int32 Amount);
+
+    UFUNCTION(BlueprintCallable, Category = "Resources")
+    void RemoveResource(EResourceType ResourceType, int32 Amount);
 
     // Units/Buildings in this hex
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Tile")

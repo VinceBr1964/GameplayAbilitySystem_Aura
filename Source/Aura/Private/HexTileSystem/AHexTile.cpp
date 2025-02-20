@@ -236,5 +236,40 @@ void AHexTile::SetHighlighted(bool bHighlight)
     }
 }
 
+void AHexTile::AddResource(EResourceType ResourceType, int32 Amount)
+{
+    if (Amount <= 0)
+    {
+        return; // Ignore invalid or zero amounts
+    }
+
+    // If the resource already exists, increase it; otherwise, add it
+    if (ResourceMap.Contains(ResourceType))
+    {
+        ResourceMap[ResourceType] += Amount;
+    }
+    else
+    {
+        ResourceMap.Add(ResourceType, Amount);
+    }
+}
+
+void AHexTile::RemoveResource(EResourceType ResourceType, int32 Amount)
+{
+    if (Amount <= 0 || !ResourceMap.Contains(ResourceType))
+    {
+        return; // Either invalid amount or tile does not have that resource
+    }
+
+    int32& CurrentAmount = ResourceMap[ResourceType];
+    CurrentAmount = FMath::Max(0, CurrentAmount - Amount);
+
+    // If resource hits zero, optionally remove it from the map entirely
+    if (CurrentAmount <= 0)
+    {
+        ResourceMap.Remove(ResourceType);
+    }
+}
+
 
 
