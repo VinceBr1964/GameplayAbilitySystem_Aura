@@ -17,9 +17,9 @@ void AAuraFriendlyAIController::BeginPlay()
 AAuraFriendlyAIController::AAuraFriendlyAIController()
 {
 	Blackboard = CreateDefaultSubobject<UBlackboardComponent>("FriendlyBlackboardComponent");
-	check(Blackboard);
+//	check(Blackboard);
 	BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>("FriendlyBehaviorTreeComponent");
-	check(BehaviorTreeComponent);
+//	check(BehaviorTreeComponent);
 }
 
 void AAuraFriendlyAIController::SetEnemy(AActor* Enemy)
