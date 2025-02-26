@@ -64,7 +64,7 @@ public:
 
     // Hex Owner (Neutral, Player, NPC)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Tile")
-    FString HexOwner;
+    EHexOwner HexOwner = EHexOwner::Neutral;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Tile")
     UMaterialInstance* DefaultMaterial;

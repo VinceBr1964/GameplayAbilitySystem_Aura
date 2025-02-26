@@ -18,6 +18,24 @@ public:
 
     void Tick(float DeltaTime);
 
+    // The main Blueprint-callable function
+    UFUNCTION(BlueprintCallable, Category = "Debug")
+    void DrawHexEdgesOneByOne(AHexTile* HexToDraw, float PauseTime = 1.0f);
+
+    UFUNCTION(BlueprintCallable, Category = "Ownership")
+    void SetHexOwnerToPlayerIfStanding(AActor* PlayerActor);
+
+    UFUNCTION(BlueprintCallable, Category = "Ownership")
+    void DrawDebugLinesAroundPlayerOwnedHexes(float LineThickness = 5.0f);
+
+    UFUNCTION(BlueprintCallable, Category = "Ownership")
+    void DrawPerimeterEdgesOfPlayerOwnedTiles(float LineThickness = 15.0f, FColor LineColor = FColor::White);
+
+    UFUNCTION(BlueprintCallable, Category = "Ownership")
+    void DrawPerpendicularBordersForPlayerTiles(float HalfLineLength, FColor LineColor, float LineThickness);
+
+    void DrawPerpendicularBorderBetweenTiles(AHexTile* TileA, AHexTile* TileB, float HalfLineLength, FColor LineColor, float LineThickness);
+
     AHexTile* GetHexTileAtLocation(FVector WorldLocation);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Grid")
@@ -28,6 +46,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Grid")
     TSubclassOf<AHexTile> HexTileClass;
+
+    UFUNCTION(BlueprintCallable, Category = "Debug")
+    void DebugHexOrientation(AHexTile* Tile, float HexRadius = 200.f);
 
 //    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Grid")
   //  float NormalizedNoise = 0.f;
@@ -79,6 +100,25 @@ public:
     void ClearMovementRange();
 
     void AssignNeighbors();
+
+    // Helper to draw edges for a single tile
+    void DrawHexEdges(AHexTile* HexTile, FColor Color, float Thickness);
+
+
+
+
+
+    
+protected:
+    // We'll store the corners to draw, so the timer can access them incrementally
+    TArray<FVector> HexCorners;
+    // Index of the current corner
+    int32 CurrentCornerIndex = 0;
+    // Timer handle
+    FTimerHandle EdgeTimerHandle;
+
+    // Helper function that draws the next edge, then increments corner index
+    void DrawNextEdge();
 
 private:
 

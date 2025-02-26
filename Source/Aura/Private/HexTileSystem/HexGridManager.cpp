@@ -24,6 +24,53 @@ void AHexGridManager::Tick(float DeltaTime)
     }
 }
 
+void AHexGridManager::DrawHexEdgesOneByOne(AHexTile* HexToDraw, float PauseTime)
+{
+    if (!HexToDraw)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DrawHexEdgesOneByOne called with null HexTile."));
+        return;
+    }
+
+    // Clear any previous timer
+    GetWorldTimerManager().ClearTimer(EdgeTimerHandle);
+    HexCorners.Empty();
+    CurrentCornerIndex = 0;
+
+    // 1) Gather corners (6) for this hex. 
+    //    - We assume you know the hex radius (from your manager or from the tile).
+    //    - You can also store a HexSize in AHexTile or pass it in, as needed.
+
+    const float HexRadius = (/* e.g. HexSize or your tile’s known size */ 200.f);
+    const int32 NumSides = 6;
+
+    // Center is the actor’s location or a known stored location
+    FVector Center = HexToDraw->GetActorLocation();
+
+    // Precompute corners
+    for (int32 i = 0; i < NumSides; i++)
+    {
+        // Each side is 60 degrees apart
+        float AngleDeg = 60.f * i;
+        float AngleRad = FMath::DegreesToRadians(AngleDeg);
+
+        float X = Center.X + HexRadius * FMath::Cos(AngleRad);
+        float Y = Center.Y + HexRadius * FMath::Sin(AngleRad);
+        float Z = Center.Z; // Keep it flat
+
+        HexCorners.Add(FVector(X, Y, Z));
+    }
+
+    // 2) Start a repeating timer that calls DrawNextEdge() once per PauseTime.
+    GetWorldTimerManager().SetTimer(
+        EdgeTimerHandle,
+        this,
+        &AHexGridManager::DrawNextEdge,
+        PauseTime,
+        true  // bLoop = true, so it keeps firing until we manually stop.
+    );
+}
+
 AHexTile* AHexGridManager::GetHexTileAtLocation(FVector WorldLocation)
 {
     AHexTile* NearestTile = nullptr;
@@ -542,12 +589,12 @@ void AHexGridManager::DrawMovementBoundary(TArray<TPair<AHexTile*, int>> Boundar
         FVector Center = Tile->GetActorLocation();
         HexSize = 200.0f; // Adjust based on your hex size
 
-        FVector HexCorners[6];
+        FVector LocalHexCorners[6];
 
         for (int i = 0; i < 6; i++)
         {
             float Angle = (PI / 3) * i; // 60 degrees per side
-            HexCorners[i] = FVector(
+            LocalHexCorners[i] = FVector(
                 Center.X + HexSize * FMath::Cos(Angle),
                 Center.Y + HexSize * FMath::Sin(Angle),
                 Center.Z + 5.0f
@@ -555,7 +602,7 @@ void AHexGridManager::DrawMovementBoundary(TArray<TPair<AHexTile*, int>> Boundar
         }
 
         int NextIndex = (EdgeIndex + 1) % 6; // Get the next point to complete the edge
-        DrawDebugLine(GetWorld(), HexCorners[EdgeIndex], HexCorners[NextIndex], FColor::Cyan, false, 10.0f, 0, 13.0f);
+        DrawDebugLine(GetWorld(), LocalHexCorners[EdgeIndex], LocalHexCorners[NextIndex], FColor::Cyan, false, 10.0f, 0, 13.0f);
         
     }
 }
@@ -642,8 +689,8 @@ void AHexGridManager::AssignNeighbors()
 
         // Hex offsets for adjacent tiles
         int NeighborOffsets[6][2] = {
-            {+1, 0}, {+1, -1}, {0, -1},
-            {-1, 0}, {-1, +1}, {0, +1}
+            {+1, 0}, {0, +1}, {-1, +1},
+            {-1,  0}, { 0, -1}, {+1, -1}
         };
 
         for (int i = 0; i < 6; i++)
@@ -664,7 +711,354 @@ void AHexGridManager::AssignNeighbors()
     }
 }
 
+void AHexGridManager::DrawNextEdge()
+{
+    // Each edge is between HexCorners[i] and HexCorners[i+1],
+    // wrapping around using modulus or by connecting corner 5 -> corner 0.
 
+    if (HexCorners.Num() < 2)
+    {
+        // Something went wrong or user didn't initialize corners
+        GetWorldTimerManager().ClearTimer(EdgeTimerHandle);
+        return;
+    }
+
+    // We draw the edge from CurrentCornerIndex to the next corner
+    int32 NextIndex = (CurrentCornerIndex + 1) % HexCorners.Num();
+
+    // Actually draw the line
+    DrawDebugLine(
+        GetWorld(),
+        HexCorners[CurrentCornerIndex],
+        HexCorners[NextIndex],
+        FColor::Green,
+        false,   // bPersistentLines: false means it’ll eventually go away, or you can set true if you want indefinite lines
+        10.f,    // Lifetime in seconds (can be large if you want them to remain visible)
+        0,
+        10.f      // Thickness of the line
+    );
+
+    // Move the index forward
+    CurrentCornerIndex++;
+
+    // If we have reached the final corner, we’ve drawn all 6 edges -> stop the timer
+    if (CurrentCornerIndex >= HexCorners.Num())
+    {
+        // We’ve drawn all edges
+        GetWorldTimerManager().ClearTimer(EdgeTimerHandle);
+    }
+}
+
+void AHexGridManager::SetHexOwnerToPlayerIfStanding(AActor* PlayerActor)
+{
+    if (!PlayerActor)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerActor is null in SetHexOwnerToPlayerIfStanding."));
+        return;
+    }
+
+    // 1. Find which hex tile the player is standing on
+    const FVector PlayerLocation = PlayerActor->GetActorLocation();
+
+    // If you already have a helper like GetHexTileAtLocation(FVector), you can use it:
+    AHexTile* TileUnderPlayer = GetHexTileAtLocation(PlayerLocation);
+
+    if (!TileUnderPlayer)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("No hex found under the player’s location."));
+        return;
+    }
+    if (TileUnderPlayer->HexType == EHexType::Water)
+    {
+        return;
+    }
+
+    // 2. Set that tile's ownership to Player
+    TileUnderPlayer->HexOwner = EHexOwner::Player;
+
+    UE_LOG(LogTemp, Display, TEXT("Hex at Q=%d, R=%d is now owned by the player."),
+        TileUnderPlayer->Q, TileUnderPlayer->R);
+}
+
+void AHexGridManager::DrawDebugLinesAroundPlayerOwnedHexes(float LineThickness /*= 5.0f*/) //
+{
+    for (AHexTile* Tile : HexTiles)
+    {
+        if (!Tile) continue;
+        if (Tile->HexOwner == EHexOwner::Player)
+        {
+            DrawHexEdges(Tile, FColor::White, LineThickness);
+        }
+    }
+}
+
+void AHexGridManager::DrawPerimeterEdgesOfPlayerOwnedTiles(float LineThickness, FColor LineColor)
+{
+    // Go through all tiles
+    for (AHexTile* Tile : HexTiles)
+    {
+        if (!Tile) continue;
+
+        if (Tile->HexType == EHexType::Water)
+        {
+            Tile->HexOwner = EHexOwner::Neutral;
+        }
+
+        // Only care about player-owned tiles
+        if (Tile->HexOwner != EHexOwner::Player) continue;
+
+        // Precompute the corners
+        TArray<FVector> Corners;
+        Corners.Reserve(6);
+
+        const FVector Center = Tile->GetActorLocation();
+        const float HexRadius = /* e.g. your hex size */ 200.f;
+        for (int32 i = 0; i < 6; i++)
+        {
+            float AngleDeg = ((60.f * i) + 0.f);
+            float AngleRad = FMath::DegreesToRadians(AngleDeg);
+
+            float X = Center.X + HexRadius * FMath::Cos(AngleRad);
+            float Y = Center.Y + HexRadius * FMath::Sin(AngleRad);
+            float Z = Center.Z;
+
+            Corners.Add(FVector(X, Y, Z));
+            
+        }
+
+        // For each of the 6 sides, check the corresponding neighbor
+        for (int32 i = 0; i < 6; i++)
+        {
+            AHexTile* NeighborTile = nullptr;
+            if (i < Tile->Neighbors.Num())  // Just in case
+            {
+                NeighborTile = Tile->Neighbors[i];
+            }
+
+            bool bShouldDrawEdge = false;
+            if (NeighborTile == nullptr)
+            {
+                // No neighbor => definitely an outer edge
+                bShouldDrawEdge = true;
+            }
+            else
+            {
+                // If neighbor is not owned by the player, then this is a border
+                if (NeighborTile->HexOwner != EHexOwner::Player)
+                {
+                    bShouldDrawEdge = true;
+                }
+            }
+
+            if (bShouldDrawEdge)
+            {
+                int32 NextIndex = (i + 1) % 6; // wrap around from edge 5 → 0
+
+                DrawDebugLine(
+                    GetWorld(),
+                    Corners[i],
+                    Corners[NextIndex],
+                    LineColor,
+                    true,         // bPersistentLines
+                    10.0f,         // Lifetime (seconds)
+                    0,             // Depth priority
+                    LineThickness
+                );
+            }
+        }
+    }
+}
+void AHexGridManager::DrawHexEdges(AHexTile* HexTile, FColor Color, float Thickness)
+{
+    if (!HexTile) return;
+
+    const FVector Center = HexTile->GetActorLocation();
+    const float HexRadius = /* e.g. your HexSize */ 200.f;
+
+    // 6 corners for a regular hex
+    constexpr int32 NumCorners = 6;
+    TArray<FVector> Corners;
+    Corners.Reserve(NumCorners);
+
+    // Compute corners. Each side is 60 degrees (PI/3) apart
+    for (int32 i = 0; i < NumCorners; i++)
+    {
+        float Angle = FMath::DegreesToRadians(60.f * i);
+        float X = Center.X + HexRadius * FMath::Cos(Angle);
+        float Y = Center.Y + HexRadius * FMath::Sin(Angle);
+        float Z = Center.Z;
+
+        Corners.Add(FVector(X, Y, Z));
+    }
+
+    // Draw lines between consecutive corners
+    for (int32 i = 0; i < NumCorners; i++)
+    {
+        int32 NextIndex = (i + 1) % NumCorners; // wrap around
+        DrawDebugLine(
+            GetWorld(),
+            Corners[i],
+            Corners[NextIndex],
+            Color,
+            true,      // bPersistentLines
+            10.0f,      // Lifetime
+            0,          // DepthPriority
+            Thickness
+        );
+    }
+}
+
+void AHexGridManager::DrawPerpendicularBorderBetweenTiles(
+    AHexTile* TileA,
+    AHexTile* TileB,
+    float HalfLineLength,   // how far the border extends from midpoint in each direction
+    FColor LineColor,
+    float LineThickness)
+{
+    if (!TileA || !TileB) return;
+
+    // 1) Centers
+    FVector CenterA = TileA->GetActorLocation();
+    FVector CenterB = TileB->GetActorLocation();
+
+    // 2) Midpoint
+    FVector Midpoint = (CenterA + CenterB) * 0.5f;
+
+    // 3) Direction from A -> B (normalized in XY)
+    FVector Dir = (CenterB - CenterA);
+    Dir.Z = 0.0f; // ignore vertical, if you just want it in 2D plane
+    Dir.Normalize(); // safe to do if A != B
+
+    // 4) Perpendicular direction (in XY plane)
+    // For a 2D cross, you can swap X/Y and flip one sign:
+    // e.g. if Dir = (dx, dy), then Perp = (-dy, dx) or (dy, -dx)
+    FVector2D Dir2D(Dir.X, Dir.Y);
+    FVector2D Perp2D(-Dir2D.Y, Dir2D.X);
+    Perp2D.Normalize(); // just in case
+
+    // 5) Convert back to 3D
+    FVector Perp3D(Perp2D.X, Perp2D.Y, 0);
+
+    // 6) Start and end points on either side of midpoint
+    FVector StartPos = Midpoint - Perp3D * HalfLineLength;
+    FVector EndPos = Midpoint + Perp3D * HalfLineLength;
+
+    // 7) Draw the debug line
+    DrawDebugLine(
+        GetWorld(),
+        StartPos,
+        EndPos,
+        LineColor,
+        true,         // bPersistentLines
+        10.0f,         // lifetime
+        0,             // depth priority
+        LineThickness
+    );
+}
+
+void AHexGridManager::DrawPerpendicularBordersForPlayerTiles(
+    float HalfLineLength /*=100.f*/,
+    FColor LineColor /*=FColor::Yellow*/,
+    float LineThickness /*=5.f*/)
+{
+    for (AHexTile* Tile : HexTiles)
+    {
+        if (!Tile) continue;
+        if (Tile->HexType == EHexType::Water)
+        {
+            Tile->HexOwner = EHexOwner::Neutral;
+        }
+
+        // Only process tile if owned by the player
+        if (Tile->HexOwner == EHexOwner::Player)
+        {
+            // For each neighbor
+            for (AHexTile* Neighbor : Tile->Neighbors)
+            {
+                // If neighbor doesn't exist or is not owned by the player,
+                // we want a border line 
+                if (Neighbor == nullptr || Neighbor->HexOwner != EHexOwner::Player)
+                {
+                    // Optional: a check to avoid drawing duplicates. E.g. only draw if Tile < Neighbor
+                    // or some other condition. Otherwise you might see the line repeated from each side.
+
+                    DrawPerpendicularBorderBetweenTiles(Tile, Neighbor, HalfLineLength, LineColor, LineThickness);
+                }
+            }
+        }
+    }
+}
+
+void AHexGridManager::DebugHexOrientation(AHexTile* Tile, float HexRadius /*=200.f*/)
+{
+    if (!Tile) return;
+
+    // Grab the tile’s center location
+    const FVector Center = Tile->GetActorLocation();
+
+    // 1) East (0°)
+    {
+        float AngleDeg = 0.f;
+        float AngleRad = FMath::DegreesToRadians(AngleDeg);
+        FVector Direction(FMath::Cos(AngleRad), FMath::Sin(AngleRad), 0.f);
+
+        FVector End = Center + (Direction * HexRadius);
+        // Red line for East
+        DrawDebugLine(
+            GetWorld(),
+            Center,
+            End,
+            FColor::Red,
+            false,      // bPersistentLines
+            30.f,       // Lifetime
+            0,          // Depth priority
+            15.f         // Thickness
+        );
+    }
+
+    // 2) NE corner (60°)
+    {
+        float AngleDeg = 60.f;
+        float AngleRad = FMath::DegreesToRadians(AngleDeg);
+        FVector Direction(FMath::Cos(AngleRad), FMath::Sin(AngleRad), 0.f);
+
+        FVector End = Center + (Direction * HexRadius);
+        // Green line for NE
+        DrawDebugLine(
+            GetWorld(),
+            Center,
+            End,
+            FColor::Green,
+            false,
+            30.f,
+            0,
+            15.f
+        );
+    }
+
+    // 3) NW corner (120°)
+    {
+        float AngleDeg = 120.f;
+        float AngleRad = FMath::DegreesToRadians(AngleDeg);
+        FVector Direction(FMath::Cos(AngleRad), FMath::Sin(AngleRad), 0.f);
+
+        FVector End = Center + (Direction * HexRadius);
+        // Blue line for NW
+        DrawDebugLine(
+            GetWorld(),
+            Center,
+            End,
+            FColor::Blue,
+            false,
+            30.f,
+            0,
+            15.f
+        );
+    }
+
+    // Add more lines if desired (e.g. 180°, 240°, 300°) 
+    // to see full orientation
+}
 
 
 
