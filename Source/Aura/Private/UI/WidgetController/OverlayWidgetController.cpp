@@ -17,6 +17,11 @@ void UOverlayWidgetController::BroadcastInitialValues()
 	OnMaxHealthChanged.Broadcast(GetAuraAS()->GetMaxHealth());
 	OnManaChanged.Broadcast(GetAuraAS()->GetMana());
 	OnMaxManaChanged.Broadcast(GetAuraAS()->GetMaxMana());
+	OnGoldChanged.Broadcast(GetAuraAS()->GetGold());
+	OnFoodChanged.Broadcast(GetAuraAS()->GetFood());
+	OnWoodChanged.Broadcast(GetAuraAS()->GetWood());
+	OnOreChanged.Broadcast(GetAuraAS()->GetOre());
+	OnMagicGemsChanged.Broadcast(GetAuraAS()->GetMagicGems());
 
 }
 
@@ -42,6 +47,41 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 		[this](const FOnAttributeChangeData& Data)
 		{
 			OnMaxHealthChanged.Broadcast(Data.NewValue);
+		}
+	);
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAuraAS()->GetGoldAttribute()).AddLambda(
+		[this](const FOnAttributeChangeData& Data)
+		{
+			OnGoldChanged.Broadcast(Data.NewValue);
+		}
+	);
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAuraAS()->GetFoodAttribute()).AddLambda(
+		[this](const FOnAttributeChangeData& Data)
+		{
+			OnFoodChanged.Broadcast(Data.NewValue);
+		}
+	);
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAuraAS()->GetWoodAttribute()).AddLambda(
+		[this](const FOnAttributeChangeData& Data)
+		{
+			OnWoodChanged.Broadcast(Data.NewValue);
+		}
+	);
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAuraAS()->GetOreAttribute()).AddLambda(
+		[this](const FOnAttributeChangeData& Data)
+		{
+			OnOreChanged.Broadcast(Data.NewValue);
+		}
+	);
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAuraAS()->GetMagicGemsAttribute()).AddLambda(
+		[this](const FOnAttributeChangeData& Data)
+		{
+			OnMagicGemsChanged.Broadcast(Data.NewValue);
 		}
 	);
 
