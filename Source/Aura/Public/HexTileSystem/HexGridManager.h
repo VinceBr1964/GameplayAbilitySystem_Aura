@@ -36,6 +36,7 @@ public:
 
     void DrawPerpendicularBorderBetweenTiles(AHexTile* TileA, AHexTile* TileB, float HalfLineLength, FColor LineColor, float LineThickness);
 
+    UFUNCTION(BlueprintCallable, Category = "Ownership")
     AHexTile* GetHexTileAtLocation(FVector WorldLocation);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Grid")

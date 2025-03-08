@@ -15,6 +15,8 @@
 #include <AbilitySystem/AuraAttributeSet.h>
 #include <Character/AuraCharacter.h>
 #include <AbilitySystem/AuraAbilitySystemComponent.h>
+#include <Game/TurnManager.h>
+#include <HexTileSystem/HexGridManager.h>
 
 void AAuraGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 {
@@ -289,4 +291,25 @@ void AAuraGameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	Maps.Add(DefaultMapName, DefaultMap);
+
+	// Get the existing GameState instance and cast it to ATurnManager
+	ATurnManager* TurnManager = GetGameState<ATurnManager>();
+
+	AHexGridManager* HexGridManager = nullptr;
+	for (TActorIterator<AHexGridManager> It(GetWorld()); It; ++It)
+	{
+		HexGridManager = *It;
+		break;
+	}
+
+	if (TurnManager)
+	{
+
+		TurnManager->SpawnAvatarsOnEdge(HexGridManager);
+		TurnManager->StartTurn(HexGridManager);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ATurnManager is null! Make sure it is set as the default GameState class in your GameMode."));
+	}
 }

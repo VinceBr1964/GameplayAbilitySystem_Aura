@@ -36,6 +36,7 @@ AAuraPlayerController::AAuraPlayerController()
 {
 	bReplicates = true;
 	Spline = CreateDefaultSubobject<USplineComponent>("Spline");
+
 }
 
 void AAuraPlayerController::PlayerTick(float DeltaTime)
@@ -45,12 +46,6 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 	AutoRun();
 	UpdateMagicCircleLocation();
 
-//	AHexGridManager* GridManager = nullptr;
-//	for (TActorIterator<AHexGridManager> It(GetWorld()); It; ++It)
-//	{
-//		GridManager = *It;
-//		break;  // Stop after finding the first one
-//	}
 	
 	if (HexGridManager)
 	{
@@ -391,19 +386,20 @@ void AAuraPlayerController::SetupInputComponent()
 	// ------------------------------------------------------------------
 	// *** MOVEMENT MODE SWITCH (M Key) ***
 	// ------------------------------------------------------------------
-	if (IA_M)
+	/*if (IA_M)
 	{
 		AuraInputComponent->BindAction(
 			IA_M,
 			ETriggerEvent::Started,
-			this,
+			this
 			&AAuraPlayerController::ToggleHexMovementMode
 		);
-	}
+	}*/
 }
 
-void AAuraPlayerController::ToggleHexMovementMode()
+void AAuraPlayerController::ToggleHexMovementMode(AActor* InActiveEntity, AHexGridManager* InHexGridManager)
 {
+
 	UE_LOG(LogTemp, Warning, TEXT("M Key Pressed - Attempting to Switch Movement Mode"));
 
 	if (CurrentMovementMode == EPlayerMovementMode::FreeMovement)
@@ -411,14 +407,13 @@ void AAuraPlayerController::ToggleHexMovementMode()
 		CurrentMovementMode = EPlayerMovementMode::HexMovement;
 		UE_LOG(LogTemp, Warning, TEXT("Hex Movement Mode Activated"));
 
-		if (HexGridManager)
+
+
+		if (InHexGridManager)
 		{
-			APawn* PlayerPawn = GetPawn();
-			if (PlayerPawn)
-			{
-				AHexTile* StartTile = HexGridManager->GetHexTileAtLocation(PlayerPawn->GetActorLocation());
-				HexGridManager->ShowMovementRange(StartTile, 2); // Example movement range
-			}
+				AHexTile* StartTile = InHexGridManager->GetHexTileAtLocation(InActiveEntity->GetActorLocation());
+				InHexGridManager->RevealHexAndNeighbors(StartTile);
+				InHexGridManager->ShowMovementRange(StartTile, 2); // Example movement range GetValidMovementTiles
 		}
 	}
 	else
@@ -426,9 +421,9 @@ void AAuraPlayerController::ToggleHexMovementMode()
 		CurrentMovementMode = EPlayerMovementMode::FreeMovement;
 		UE_LOG(LogTemp, Warning, TEXT("Free Movement Mode Activated"));
 
-		if (HexGridManager)
+		if (InHexGridManager)
 		{
-			HexGridManager->ClearMovementRange();
+			InHexGridManager->ClearMovementRange();
 		}
 	}
 }

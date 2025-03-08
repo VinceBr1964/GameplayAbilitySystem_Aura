@@ -97,8 +97,8 @@ AHexTile* AHexGridManager::GetHexTileAtLocation(FVector WorldLocation)
 void AHexGridManager::BeginPlay()
 {
 	Super::BeginPlay();
-	GenerateHexGrid();
-    AssignNeighbors(); //Add this to permanently assign neighbors
+	//GenerateHexGrid();
+    //AssignNeighbors(); //Add this to permanently assign neighbors
 	
 }
 
@@ -161,6 +161,7 @@ void AHexGridManager::GenerateHexGrid()
             }
         }
     }
+    AssignNeighbors();
 }
 
 
@@ -515,7 +516,7 @@ void AHexGridManager::DrawBorderLineBetweenTiles(AHexTile* TileA, AHexTile* Tile
     FVector LineEnd = Midpoint + Perpendicular * LineLength / 2;
 
     // Step 5: Draw debug line
-    DrawDebugLine(GetWorld(), LineStart, LineEnd, LineColor, false, 10.f, 0, 15.f);
+    DrawDebugLine(GetWorld(), LineStart, LineEnd, LineColor, true, 10.f, 0, 15.f);
 }
 
 // Returns all neighbors within given range
@@ -530,7 +531,7 @@ TArray<AHexTile*> AHexGridManager::GetNeighborsInRange(AHexTile* StartTile, int 
 
     while (!TileQueue.IsEmpty())
     {
-        AHexTile* CurrentTile;
+        AHexTile* CurrentTile = StartTile;
         TileQueue.Dequeue(CurrentTile);
 
         for (AHexTile* Neighbor : CurrentTile->Neighbors)
@@ -602,7 +603,7 @@ void AHexGridManager::DrawMovementBoundary(TArray<TPair<AHexTile*, int>> Boundar
         }
 
         int NextIndex = (EdgeIndex + 1) % 6; // Get the next point to complete the edge
-        DrawDebugLine(GetWorld(), LocalHexCorners[EdgeIndex], LocalHexCorners[NextIndex], FColor::Cyan, false, 10.0f, 0, 13.0f);
+        DrawDebugLine(GetWorld(), LocalHexCorners[EdgeIndex], LocalHexCorners[NextIndex], FColor::Cyan, true, 10.0f, 0, 13.0f);
         
     }
 }

@@ -4,7 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
+#include <Character/AuraCharacter.h>
+#include <Character/AuraHexNPC.h>
+#include <PLayer/AuraPlayerController.h>
 #include "TurnManager.generated.h"
+
+
+
 
 
 /**
@@ -40,6 +46,14 @@ public:
     // Sets default values for this actor's properties
     ATurnManager();
 
+    // For the Player’s avatar/pawn
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TSubclassOf<AAuraHexNPC> PlayerAvatarClass;
+
+    // For the NPC’s avatar/pawn
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TSubclassOf<AAuraHexNPC> NPCAvatarClass;
+
     /** Called at game start or when spawned */
     virtual void BeginPlay() override;
 
@@ -63,7 +77,7 @@ public:
 
     /** Called at the start of each participant's turn. */
     UFUNCTION(BlueprintCallable, Category = "Turn Manager")
-    void StartTurn();
+    void StartTurn(AHexGridManager* InHexGridManager);
 
     /** For hooking up UI or AI logic: called just before a new turn starts. */
     UPROPERTY(BlueprintAssignable, Category = "Turn Manager")
@@ -76,6 +90,8 @@ public:
     /** For hooking up end-of-turn logic. */
     UPROPERTY(BlueprintAssignable, Category = "Turn Manager")
     FTurnEventSignature OnTurnEnded;
+
+    void SpawnAvatarsOnEdge(AHexGridManager* InHexGridManager);
 
 protected:
 
@@ -100,4 +116,6 @@ protected:
 
     /** Helper function to advance to the next participant or next round. */
     void AdvanceTurnIndex();
+
+
 };

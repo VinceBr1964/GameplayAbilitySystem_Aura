@@ -55,8 +55,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HideMagicCircle();
 
+	void ToggleHexMovementMode(AActor* InActiveEntity, AHexGridManager* InHexGridManager);
 
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hex")
+	class AHexGridManager* HexGridManager;
 
 protected:
 
@@ -70,7 +72,7 @@ protected:
 
 private:
 
-	void ToggleHexMovementMode();
+
 	
 	AHexTile* LastRevealedHex = nullptr;
 
@@ -95,7 +97,7 @@ private:
 
 	EPlayerMovementMode CurrentMovementMode = EPlayerMovementMode::FreeMovement;
 
-	class AHexGridManager* HexGridManager;
+
 
 	void CursorTrace();
 	TObjectPtr<AActor> LastActor;
