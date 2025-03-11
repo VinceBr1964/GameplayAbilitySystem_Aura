@@ -84,6 +84,7 @@ void ATurnManager::StartTurn(AHexGridManager* InHexGridManager)
                 GridManager = *It;
                 break;  // Stop after finding the first one
             }*/
+            PC->DispatchBeginPlay();
             PC->ToggleHexMovementMode(ActiveEntity, InHexGridManager);
         }
     }

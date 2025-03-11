@@ -297,6 +297,26 @@ void AAuraPlayerController::BeginPlay()
 		Subsystem->AddMappingContext(AuraContext, 0);
 	}
 
+	//Get a reference to the Starting Point Actor
+	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	{
+		AActor* FoundActor = *It;
+		if (FoundActor->GetName().Contains("BP_StartingSpot"))
+		{
+			StartingSpotActor = FoundActor;
+			break;
+		}
+	}
+	if (StartingSpotActor)
+	{
+		// Now you can call StartingSpotActor->SetActorLocation(...)
+		UE_LOG(LogTemp, Log, TEXT("Found starting spot %s"), *StartingSpotActor->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Couldn't find the StartingSpot actor!"));
+	}
+
 	// Get a reference to HexGridManager
 	for (TActorIterator<AHexGridManager> It(GetWorld()); It; ++It)
 	{
@@ -414,6 +434,14 @@ void AAuraPlayerController::ToggleHexMovementMode(AActor* InActiveEntity, AHexGr
 				AHexTile* StartTile = InHexGridManager->GetHexTileAtLocation(InActiveEntity->GetActorLocation());
 				InHexGridManager->RevealHexAndNeighbors(StartTile);
 				InHexGridManager->ShowMovementRange(StartTile, 2); // Example movement range GetValidMovementTiles
+
+				if (StartingSpotActor)
+				{
+					FVector TileLocation = StartTile->GetActorLocation();
+					TileLocation.Z += 20.f;
+					StartingSpotActor->SetActorLocation(TileLocation);
+				}
+			
 		}
 	}
 	else

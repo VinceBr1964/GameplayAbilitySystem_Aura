@@ -43,6 +43,9 @@ class AURA_API AAuraPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY()
+	AActor* StartingSpotActor = nullptr;
+
 	AAuraPlayerController();
 	virtual void PlayerTick(float DeltaTime) override;
 

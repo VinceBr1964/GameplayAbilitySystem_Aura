@@ -54,6 +54,7 @@ public:
 //    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Grid")
   //  float NormalizedNoise = 0.f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Grid")
     TArray<AHexTile*> HexTiles;
 
     //AHexTile* StartTile;

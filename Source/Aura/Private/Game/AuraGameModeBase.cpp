@@ -292,6 +292,7 @@ void AAuraGameModeBase::BeginPlay()
 
 	Maps.Add(DefaultMapName, DefaultMap);
 
+
 	// Get the existing GameState instance and cast it to ATurnManager
 	ATurnManager* TurnManager = GetGameState<ATurnManager>();
 
