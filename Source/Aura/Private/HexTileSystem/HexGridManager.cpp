@@ -5,6 +5,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/UnrealMathUtility.h"  // Add this include at the top
 #include "HexTileSystem/AHexTile.h"
+#include "Containers/Queue.h"
+#include "Algo/Reverse.h"
 #include "Engine/World.h"
 
 // Sets default values
@@ -1060,8 +1062,77 @@ void AHexGridManager::DebugHexOrientation(AHexTile* Tile, float HexRadius /*=200
         );
     }
 
-    // Add more lines if desired (e.g. 180°, 240°, 300°) 
-    // to see full orientation
+}
+
+TArray<AHexTile*> AHexGridManager::FindPath(AHexTile* StartTile, AHexTile* EndTile)
+{
+    TArray<AHexTile*> Path;
+
+    // Safety checks
+    if (!StartTile || !EndTile || StartTile == EndTile)
+    {
+        if (StartTile == EndTile && StartTile )
+        {
+            // The path is just one tile if they match
+            Path.Add(StartTile);
+        }
+        return Path;
+    }
+
+    // We'll use a BFS queue
+    TQueue<AHexTile*> Frontier;
+    Frontier.Enqueue(StartTile);
+
+    // Keep track of which tile we came from in order to reconstruct the path
+    TMap<AHexTile*, AHexTile*> CameFrom;
+    CameFrom.Add(StartTile, nullptr);
+
+    while (!Frontier.IsEmpty())
+    {
+        AHexTile* Current = nullptr;
+        Frontier.Dequeue(Current);
+
+        if (Current == EndTile)
+        {
+            // Once we've reached the EndTile, stop the search
+            break;
+        }
+
+        // Explore neighbors
+        for (AHexTile* Neighbor : Current->Neighbors)
+        {
+            if (Neighbor == nullptr) continue;
+
+            // Example: if MovementCost == -1, treat it as impassable (like water)
+            bool bImpassable = (Neighbor->MovementCost < 0);
+            bool bVisited = CameFrom.Contains(Neighbor);
+            if (!bImpassable && !bVisited)
+            {
+                Frontier.Enqueue(Neighbor);
+                CameFrom.Add(Neighbor, Current);
+            }
+        }
+    }
+
+    // If EndTile was never added to CameFrom, no path exists
+    if (!CameFrom.Contains(EndTile))
+    {
+        // Return empty path
+        return Path;
+    }
+
+    // Reconstruct the path by walking backwards from EndTile
+    AHexTile* Tile = EndTile;
+    while (Tile)
+    {
+        Path.Add(Tile);
+        Tile = CameFrom[Tile];
+    }
+
+    // Now the path is from EndTile -> StartTile, so reverse it
+    Algo::Reverse(Path);
+
+    return Path;
 }
 
 

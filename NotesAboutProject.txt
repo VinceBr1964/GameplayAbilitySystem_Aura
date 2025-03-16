@@ -1,0 +1,52 @@
+Notes I don't want to forget about the project:
+
+
+3/11/2025
+--------------------------------------------------------------------------------------------------------------------
+Design around turn taking is not strong.  I eventually want to change it but for now:
+
+HexGridManager.cpp / AuraGameModeBase.cpp / AuraPlayerController.cpp all play a role:
+
+AuraPlayerController.cpp has the following code inside ToggleHexMovementMonde
+
+		if (InHexGridManager)
+		{
+				AHexTile* StartTile = InHexGridManager->GetHexTileAtLocation(InActiveEntity->GetActorLocation());
+				InHexGridManager->RevealHexAndNeighbors(StartTile);
+				InHexGridManager->ShowMovementRange(StartTile, 2); // Example movement range GetValidMovementTiles
+
+				if (StartingSpotActor)
+				{
+					FVector TileLocation = StartTile->GetActorLocation();
+					TileLocation.Z += 20.f;
+					StartingSpotActor->SetActorLocation(TileLocation);
+				}
+			
+		}
+	}
+
+
+In AuraGameModeBase.cpp There is relevant turn code in Begin Play
+
+	// Get the existing GameState instance and cast it to ATurnManager
+	ATurnManager* TurnManager = GetGameState<ATurnManager>();
+
+	AHexGridManager* HexGridManager = nullptr;
+	for (TActorIterator<AHexGridManager> It(GetWorld()); It; ++It)
+	{
+		HexGridManager = *It;
+		break;
+	}
+
+	if (TurnManager)
+	{
+
+		TurnManager->SpawnAvatarsOnEdge(HexGridManager);
+		TurnManager->StartTurn(HexGridManager);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ATurnManager is null! Make sure it is set as the default GameState class in your GameMode."));
+	}
+
+--------------------------------------------------------------------------------------------------------------------

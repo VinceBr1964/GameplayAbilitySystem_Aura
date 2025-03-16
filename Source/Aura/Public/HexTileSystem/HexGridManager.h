@@ -51,6 +51,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Debug")
     void DebugHexOrientation(AHexTile* Tile, float HexRadius = 200.f);
 
+    UFUNCTION(BlueprintCallable, Category = "Hex Grid")
+    TArray<AHexTile*> FindPath(AHexTile* StartTile, AHexTile* EndTile);
+
 //    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hex Grid")
   //  float NormalizedNoise = 0.f;
 
