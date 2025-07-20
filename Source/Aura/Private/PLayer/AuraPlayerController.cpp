@@ -24,12 +24,14 @@
 #include "NiagaraFunctionLibrary.h"
 // Added by ChatGPT
 #include "Character/AuraCharacter.h"
+#include "Character/AuraCharacterBase.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 // end added by GPT
 #include "Actor/MagicCircle.h"
 #include "Components/DecalComponent.h"
 #include "Aura/Aura.h"
+#include "Game/TurnManager.h"
 
 
 AAuraPlayerController::AAuraPlayerController()
@@ -402,6 +404,15 @@ void AAuraPlayerController::SetupInputComponent()
 			&AAuraPlayerController::ZoomCamera
 		);
 	}
+        if (IA_EndTurn)
+        {
+                AuraInputComponent->BindAction(
+                        IA_EndTurn,
+                        ETriggerEvent::Started,
+                        this,
+                        &AAuraPlayerController::HandleEndTurn
+                );
+        }
 
 	// ------------------------------------------------------------------
 	// *** MOVEMENT MODE SWITCH (M Key) ***
@@ -433,7 +444,13 @@ void AAuraPlayerController::ToggleHexMovementMode(AActor* InActiveEntity, AHexGr
 		{
 				AHexTile* StartTile = InHexGridManager->GetHexTileAtLocation(InActiveEntity->GetActorLocation());
 				InHexGridManager->RevealHexAndNeighbors(StartTile);
-				InHexGridManager->ShowMovementRange(StartTile, 2); // Example movement range GetValidMovementTiles
+                                if (AAuraCharacterBase* Char = Cast<AAuraCharacterBase>(InActiveEntity))
+                                {
+                                        if (Char->GetCurrentHexMoveRange() > 0)
+                                        {
+                                                InHexGridManager->ShowMovementRange(StartTile, Char->GetCurrentHexMoveRange());
+                                        }
+                                }
 
 				if (StartingSpotActor)
 				{
@@ -456,6 +473,15 @@ void AAuraPlayerController::ToggleHexMovementMode(AActor* InActiveEntity, AHexGr
 	}
 }
 
+void AAuraPlayerController::ExecuteHexMove(AActor* InActiveEntity, AHexTile* DestinationTile)
+{
+        if (!InActiveEntity || !DestinationTile) return;
+        InActiveEntity->SetActorLocation(DestinationTile->GetActorLocation());
+        if (AAuraCharacterBase* Char = Cast<AAuraCharacterBase>(InActiveEntity))
+        {
+                Char->ConsumeHexMovement(DestinationTile->MovementCost);
+        }
+}
 
 
 //Code Added By GPT
@@ -522,7 +548,7 @@ void AAuraPlayerController::ZoomCamera(const FInputActionValue& Value)
 		if (MyCharacter->CameraBoom)
 		{
 			float DesiredArmLength = MyCharacter->CameraBoom->TargetArmLength - (AxisValue * 100.f);
-			// Clamp so we don’t zoom too close/far
+			// Clamp so we donÂ’t zoom too close/far
 			DesiredArmLength = FMath::Clamp(DesiredArmLength, 300.f, 2000.f);
 			MyCharacter->CameraBoom->TargetArmLength = DesiredArmLength;
 		}
@@ -573,4 +599,15 @@ AHexTile* AAuraPlayerController::GetHexUnderPlayer()
 	return nullptr;
 }
 
+
+
+void AAuraPlayerController::HandleEndTurn()
+{
+        ATurnManager* TurnManager = GetWorld()->GetGameState<ATurnManager>();
+        if (TurnManager && HexGridManager)
+        {
+                TurnManager->EndTurn();
+                TurnManager->StartTurn(HexGridManager);
+        }
+}
 

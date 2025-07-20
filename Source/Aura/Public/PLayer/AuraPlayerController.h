@@ -58,7 +58,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HideMagicCircle();
 
-	void ToggleHexMovementMode(AActor* InActiveEntity, AHexGridManager* InHexGridManager);
+        void ToggleHexMovementMode(AActor* InActiveEntity, AHexGridManager* InHexGridManager);
+        void ExecuteHexMove(AActor* InActiveEntity, AHexTile* DestinationTile);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hex")
 	class AHexGridManager* HexGridManager;
@@ -70,8 +71,11 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	UInputAction* IA_M;
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+        UInputAction* IA_M;
+
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+        UInputAction* IA_EndTurn;
 
 private:
 
@@ -94,7 +98,9 @@ private:
 	void ShiftReleased() { bShiftKeyDown = false; };
 	bool bShiftKeyDown = false;
 
-	void Move(const FInputActionValue& InputActionValue);
+        void Move(const FInputActionValue& InputActionValue);
+
+        void HandleEndTurn();
 
 	AHexTile* GetHexUnderPlayer();
 

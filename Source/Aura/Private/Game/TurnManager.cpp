@@ -4,6 +4,7 @@
 #include "Game/TurnManager.h"
 #include "HexTileSystem/HexGridManager.h"
 #include "HexTileSystem/AHexTile.h"
+#include "Character/AuraCharacterBase.h"
 #include "EngineUtils.h"          // For TActorIterator
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
@@ -76,6 +77,12 @@ void ATurnManager::StartTurn(AHexGridManager* InHexGridManager)
     AActor* ActiveEntity = TurnOrder.IsValidIndex(CurrentTurnIndex) ? TurnOrder[CurrentTurnIndex] : nullptr;
     if (ActiveEntity)
     {
+        // Reset movement points for the actor starting its turn
+        if (AAuraCharacterBase* Char = Cast<AAuraCharacterBase>(ActiveEntity))
+        {
+            Char->CurrentHexMoveRange = Char->MaxHexMoveRange;
+        }
+
         AAuraPlayerController* PC = Cast<AAuraPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
         if (PC)
         {
