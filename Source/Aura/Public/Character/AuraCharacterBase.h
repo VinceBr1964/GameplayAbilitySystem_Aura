@@ -65,8 +65,21 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void MulticastHandleDeath(const FVector& DeathImpulse);
 
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	TArray<FTaggedMontage> AttackMontages;
+        UPROPERTY(EditAnywhere, Category = "Combat")
+        TArray<FTaggedMontage> AttackMontages;
+
+        /** Maximum hexes this unit can move each turn */
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Hex Movement")
+        int32 MaxHexMoveRange = 2;
+
+        /** Movement remaining in the current turn */
+        int32 CurrentHexMoveRange = 0;
+
+        /** Get remaining movement for this turn */
+        int32 GetCurrentHexMoveRange() const { return CurrentHexMoveRange; }
+
+        /** Deduct movement points after moving */
+        void ConsumeHexMovement(int32 Cost) { CurrentHexMoveRange = FMath::Max(0, CurrentHexMoveRange - Cost); }
 
 	UPROPERTY(ReplicatedUsing=OnRep_Stunned, BlueprintReadOnly)
 	bool bIsStunned = false;
